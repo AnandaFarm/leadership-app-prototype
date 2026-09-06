@@ -1,0 +1,1934 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<style>html,body{min-height:100%}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Ananda Farm Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap">
+<style>
+/* ---------------------------------------------------------------
+   Ananda Farm design tokens — copied from app/src/styles/tokens.css
+   --------------------------------------------------------------- */
+:root {
+  --deep-palm:#1f4a2e; --palm-green:#3e7c4a; --sunflower-gold:#f2b830; --farm-cream:#fbf6e9;
+  --ink:#1f2a22; --muted:#6b7a6e; --muted-2:#4a5a4e; --muted-3:#8a968d; --line:#ede7d6;
+  --warn:#b85c1e; --warn-deep:#8a3f12; --gold-deep:#7a5a0c; --gold-ink:#5a4a14; --star-stroke:#b8860b; --orange:#e08a3c;
+  --card:#ffffff; --sand:#f4f0e4; --mint:#eaf3ec; --mint-2:#d9e2db; --mint-text:#c9d8cc; --peach:#fdf0e6; --butter:#fbf0d4;
+  --shadow-card:0 1px 2px rgba(31,42,34,.06); --shadow-hero:0 6px 18px rgba(31,74,46,.18);
+  --radius-card:16px; --radius-hero:20px; --radius-tile:12px;
+  --font-display:'Fredoka','Nunito Sans','Segoe UI',system-ui,sans-serif;
+  --font-body:'Nunito Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  --page-max:430px; --tabbar-h:72px;
+  /* prototype chrome only */
+  --stage:#16321f; --stage-2:#1f4a2e; --stage-line:rgba(251,246,233,.14); --stage-text:#cfe0d3;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--stage); color:var(--ink);
+  font-family:var(--font-body); font-size:14px; line-height:1.4;
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+}
+a { color:var(--deep-palm); text-decoration:none; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { border:0; background:none; padding:0; cursor:pointer; text-align:inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline:2px solid var(--sunflower-gold); outline-offset:2px;
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+
+/* ---------------- Prototype chrome ---------------- */
+.samplebar {
+  position:fixed; top:0; left:0; right:0; height:32px; z-index:100;
+  background:var(--sunflower-gold); color:var(--deep-palm);
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  font-size:12px; font-weight:700; line-height:1.2; padding:0 12px; text-align:center;
+}
+.stage { display:flex; min-height:100vh; min-height:100dvh; padding-top:32px; }
+.rail {
+  width:264px; flex-shrink:0; background:var(--stage); color:var(--stage-text);
+  border-right:1px solid var(--stage-line); padding:24px 18px 32px; overflow-y:auto;
+  height:calc(100dvh - 32px); position:sticky; top:32px;
+}
+.rail__brand { font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--farm-cream); }
+.rail__note { font-size:12px; line-height:17px; color:rgba(207,224,211,.72); margin-top:6px; }
+.rail__h {
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:rgba(207,224,211,.55); margin:26px 0 8px;
+}
+.rail__group { display:flex; flex-direction:column; gap:2px; }
+.rail__btn {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:8px 10px; border-radius:9px; font-size:13px; color:var(--stage-text); width:100%; min-height:36px;
+}
+.rail__btn:hover { background:rgba(251,246,233,.07); }
+.rail__btn--on { background:var(--sunflower-gold); color:var(--deep-palm); font-weight:700; }
+.rail__who { font-size:11px; color:rgba(207,224,211,.6); }
+.rail__btn--on .rail__who { color:rgba(31,74,46,.7); }
+.rail__foot { margin-top:28px; font-size:11px; line-height:16px; color:rgba(207,224,211,.5); border-top:1px solid var(--stage-line); padding-top:14px; }
+
+.stage__main {
+  flex:1; min-width:0; display:flex; align-items:center; justify-content:center; padding:28px 24px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(62,124,74,.55) 0%, rgba(22,50,31,0) 65%),
+    var(--stage);
+}
+.device {
+  position:relative; width:100%; max-width:var(--page-max); height:min(880px, calc(100dvh - 88px));
+  background:var(--farm-cream); border:9px solid #0e2417; border-radius:40px; overflow:hidden;
+  box-shadow:0 30px 70px rgba(0,0,0,.42), 0 0 0 1px rgba(251,246,233,.08);
+}
+.device__scroll { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; }
+@media (max-width:1020px) { .rail { display:none; } }
+@media (max-width:760px) {
+  .stage__main { padding:0; background:var(--farm-cream); }
+  .device { max-width:none; height:calc(100dvh - 32px); border:0; border-radius:0; box-shadow:none; }
+}
+
+/* ---------------- App shell (from global.css) ---------------- */
+.page { min-height:100%; background:var(--farm-cream); display:flex; flex-direction:column; }
+.page-body { display:flex; flex-direction:column; gap:12px; padding:14px 16px calc(var(--tabbar-h) + 16px) 16px; }
+.page-body--no-tabs { padding-bottom:24px; }
+.card { background:var(--card); border-radius:var(--radius-card); padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow-card); }
+.card--tight { padding:12px; gap:2px; }
+.card--list { padding:0; gap:0; overflow:hidden; }
+.card--dark { background:var(--deep-palm); color:var(--farm-cream); box-shadow:none; }
+.card--link { cursor:pointer; text-align:left; width:100%; }
+.hero { background:var(--deep-palm); border-radius:var(--radius-hero); padding:14px 18px 16px; display:flex; flex-direction:column; gap:12px; box-shadow:var(--shadow-hero); color:var(--farm-cream); }
+.label { font-size:12px; font-weight:700; color:var(--muted); }
+.label--light { color:var(--mint-text); }
+.label--gold { color:var(--sunflower-gold); }
+.meta { font-size:12px; line-height:16px; color:var(--muted); }
+.meta--light { color:var(--mint-text); }
+.body { font-size:14px; line-height:20px; color:var(--ink); }
+.small { font-size:13px; line-height:18px; color:var(--muted); }
+.num-xl { font-family:var(--font-display); font-weight:600; font-size:44px; line-height:48px; font-variant-numeric:tabular-nums; }
+.num-lg { font-family:var(--font-display); font-weight:600; font-size:28px; line-height:32px; font-variant-numeric:tabular-nums; }
+.num-md { font-family:var(--font-display); font-weight:600; font-size:22px; line-height:26px; font-variant-numeric:tabular-nums; }
+.num-sm { font-family:var(--font-display); font-weight:600; font-size:20px; line-height:24px; font-variant-numeric:tabular-nums; }
+.pos { color:var(--palm-green); font-weight:700; }
+.neg { color:var(--warn); font-weight:700; }
+.bold { font-weight:700; }
+.nowrap { white-space:nowrap; }
+.row { display:flex; flex-direction:row; align-items:center; }
+.row--between { justify-content:space-between; }
+.row--baseline { align-items:baseline; }
+.row--start { align-items:flex-start; }
+.row--wrap { flex-wrap:wrap; }
+.col { display:flex; flex-direction:column; }
+.gap-2{gap:2px}.gap-3{gap:3px}.gap-4{gap:4px}.gap-6{gap:6px}.gap-8{gap:8px}.gap-10{gap:10px}.gap-12{gap:12px}
+.grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.grow { flex:1; min-width:0; }
+.right { text-align:right; }
+.divider { height:1px; background:var(--line); }
+.section-label { font-size:12px; font-weight:700; color:var(--muted); padding:0 4px; }
+.pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; border-radius:999px; padding:3px 9px; white-space:nowrap; }
+.pill--warn { color:var(--warn); background:var(--peach); }
+.pill--ok { color:var(--palm-green); background:var(--mint); }
+.pill--ok-deep { color:var(--deep-palm); background:var(--mint); }
+.pill--gold { color:var(--gold-deep); background:var(--butter); }
+.pill--muted { color:var(--muted); background:var(--sand); }
+.tile { display:flex; flex-direction:column; gap:6px; padding:10px; border-radius:var(--radius-tile); background:var(--sand); }
+.list-row { display:flex; flex-direction:row; align-items:center; gap:12px; min-height:52px; padding:0 16px; border-bottom:1px solid var(--line); width:100%; color:inherit; text-align:left; }
+.list-row:last-child { border-bottom:0; }
+.list-row__title { font-size:14px; font-weight:600; color:var(--ink); }
+.list-row__sub { font-size:12px; color:var(--muted); }
+.list-row__icon { display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.list-row__body { flex:1; min-width:0; display:flex; flex-direction:column; }
+.list-row--btn { cursor:pointer; }
+.list-row--btn:active { background:var(--sand); }
+.btn { height:48px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; gap:8px; font-size:14px; font-weight:700; padding:0 16px; white-space:nowrap; }
+.btn--primary { background:var(--deep-palm); color:var(--farm-cream); }
+.btn--gold { background:var(--sunflower-gold); color:var(--deep-palm); }
+.btn--outline { background:var(--card); color:var(--deep-palm); border:1.5px solid var(--mint-text); }
+.btn--ghost { background:rgba(251,246,233,.14); color:var(--farm-cream); }
+.btn--sm { height:36px; border-radius:10px; font-size:13px; padding:0 14px; }
+.btn:disabled { opacity:.55; cursor:default; }
+.link-btn { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:12px; font-weight:700; color:var(--deep-palm); }
+.input { height:48px; border-radius:12px; border:1.5px solid var(--mint-text); background:var(--card); padding:0 14px; font-size:16px; width:100%; }
+.track { height:8px; background:var(--line); border-radius:4px; position:relative; }
+.track__fill { position:absolute; left:0; top:0; height:100%; border-radius:4px; background:var(--palm-green); }
+.track__tick { position:absolute; top:-3px; width:2px; height:14px; background:var(--ink); }
+.track--thick { height:10px; border-radius:5px; }
+.track--thick .track__fill { border-radius:5px; }
+.track__fill--over { background:var(--warn); }
+.track__fill--gold { background:var(--sunflower-gold); }
+</style>
+<style>
+/* ---------------- Components (from app/src/styles/components.css) ---------------- */
+.app-header { display:flex; flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px; padding:22px 20px 12px; background:var(--deep-palm); color:var(--farm-cream); }
+.app-header--gold { background:var(--sunflower-gold); color:var(--deep-palm); padding-bottom:14px; }
+.app-header--stack { flex-direction:column; align-items:stretch; }
+.app-header__row { display:flex; flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px; }
+.app-header__text { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.app-header__title { font-family:var(--font-display); font-weight:600; font-size:22px; line-height:26px; color:var(--farm-cream); margin:0; text-wrap:balance; }
+.app-header--gold .app-header__title { color:var(--deep-palm); }
+.app-header__sub { font-size:13px; line-height:18px; color:var(--mint-text); }
+.app-header--gold .app-header__sub { color:var(--gold-ink); }
+.app-header__side { display:flex; flex-direction:row; align-items:center; gap:8px; flex-shrink:0; }
+.avatar { width:36px; height:36px; border-radius:18px; background:var(--sunflower-gold); color:var(--deep-palm); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; font-size:15px; flex-shrink:0; }
+.app-header--gold .avatar { background:var(--deep-palm); color:var(--farm-cream); }
+.role-switch { height:44px; min-width:44px; max-width:104px; border-radius:10px; padding:0 8px; font-size:12px; font-weight:700; border:1.5px solid rgba(251,246,233,.35); background:rgba(251,246,233,.12); color:var(--farm-cream); appearance:none; -webkit-appearance:none; }
+.app-header--gold .role-switch { border-color:rgba(31,74,46,.35); background:rgba(31,74,46,.1); color:var(--deep-palm); }
+.role-switch option { color:var(--ink); background:var(--card); }
+.header-search { height:44px; border-radius:12px; background:var(--farm-cream); display:flex; align-items:center; gap:10px; padding:0 14px; margin-top:12px; }
+.header-search input { flex:1; min-width:0; height:44px; border:0; background:transparent; font-size:14px; color:var(--ink); outline:none; }
+.header-search input::placeholder { color:var(--muted-3); }
+
+.tabbar { position:absolute; left:0; right:0; bottom:0; height:var(--tabbar-h); background:var(--card); border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:center; padding:0 8px 8px; z-index:10; }
+.tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; height:44px; margin:0 6px; border-radius:12px; font-size:11px; font-weight:600; color:var(--muted-3); }
+.tab--active { background:var(--mint); color:var(--deep-palm); font-weight:700; }
+
+.seg { display:inline-flex; background:var(--sand); border-radius:999px; padding:3px; }
+.seg--hero { background:rgba(251,246,233,.12); }
+.seg__btn { height:30px; padding:0 12px; border-radius:999px; font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap; display:flex; align-items:center; }
+.seg__btn--on { background:var(--deep-palm); color:var(--farm-cream); }
+.seg--hero .seg__btn { color:var(--mint-text); }
+.seg--hero .seg__btn--on { background:var(--farm-cream); color:var(--deep-palm); }
+
+.calls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.call { height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:13px; font-weight:700; line-height:15px; padding:0 4px; background:var(--card); color:var(--muted); border:1.5px solid var(--line); }
+.call--open { background:var(--mint); color:var(--deep-palm); border-color:var(--palm-green); }
+.call--delayed { background:var(--butter); color:var(--gold-deep); border-color:var(--sunflower-gold); }
+.call--rainout { background:var(--peach); color:var(--warn-deep); border-color:var(--warn); }
+
+.delta { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 10px; font-size:13px; font-weight:700; white-space:nowrap; }
+.delta--up { color:var(--palm-green); background:var(--mint); }
+.delta--down { color:var(--warn); background:var(--peach); }
+.delta--flat { color:var(--muted); background:var(--sand); }
+.delta--hero { background:rgba(242,184,48,.18); color:var(--sunflower-gold); }
+.delta--hero.delta--down { background:rgba(224,138,60,.22); color:#f5c08a; }
+
+.wx-chip { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; white-space:nowrap; }
+.wx-chip--gold { color:var(--sunflower-gold); }
+.wx-chip--muted { color:var(--mint-text); }
+.wx-chip--pill { background:var(--mint); color:var(--deep-palm); border-radius:999px; padding:6px 12px; font-size:13px; }
+.wx-chip--pill.wx-chip--warn { background:var(--peach); color:var(--warn-deep); }
+.wx-chip--pill.wx-chip--delayed { background:var(--butter); color:var(--gold-deep); }
+.wx-tile { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 12px; border-radius:12px; background:var(--mint); min-width:76px; }
+.wx-tile__big { font-size:12px; font-weight:700; color:var(--deep-palm); }
+.wx-tile__sub { font-size:12px; color:var(--muted-2); white-space:nowrap; }
+
+.barstrip { display:flex; gap:3px; align-items:flex-end; height:62px; }
+.barstrip__col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+.barstrip__col--hi { gap:2px; }
+.barstrip__bar { width:100%; background:rgba(251,246,233,.28); border-radius:4px 4px 0 0; }
+.barstrip__col--hi .barstrip__bar { background:var(--sunflower-gold); }
+.barstrip__lbl { font-size:11px; color:var(--mint-text); }
+.barstrip__col--hi .barstrip__lbl { font-weight:700; color:var(--farm-cream); }
+.barstrip__val { font-size:11px; font-weight:700; color:var(--sunflower-gold); }
+
+.curve { display:flex; gap:2px; align-items:flex-end; height:64px; }
+.curve__bar { flex:1; background:var(--palm-green); border-radius:4px 4px 0 0; min-height:2px; }
+.curve__bar--peak { background:var(--deep-palm); }
+.curve__axis { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+
+.hours { display:flex; gap:4px; align-items:flex-end; }
+.hours__col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.hours__temp { font-size:11px; font-weight:700; color:var(--ink); }
+.hours__temp--wet { color:var(--warn); }
+.hours__bar { width:100%; height:6px; background:var(--palm-green); border-radius:3px; }
+.hours__bar--wet { background:var(--orange); }
+.hours__lbl { font-size:12px; color:var(--muted); }
+
+.legend { display:flex; gap:10px; align-items:center; }
+.legend__item { display:flex; gap:4px; align-items:center; font-size:12px; color:var(--muted); }
+.legend__swatch { width:10px; height:10px; border-radius:2px; }
+.zones { display:flex; flex-direction:column; gap:9px; }
+.zone { display:flex; align-items:center; gap:10px; min-height:22px; }
+.zone__name { width:96px; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ink); }
+.zone__bars { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.zone__bar { height:8px; border-radius:0 4px 4px 0; background:var(--palm-green); min-width:2px; }
+.zone__bar--ly { background:var(--mint-2); }
+.zone__val { width:58px; text-align:right; font-size:13px; font-weight:700; color:var(--ink); flex-shrink:0; font-variant-numeric:tabular-nums; }
+.zone__val--neg { color:var(--warn); }
+
+.labor { display:flex; align-items:center; gap:10px; height:34px; }
+.labor__name { width:104px; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ink); }
+.labor .track { flex:1; }
+.labor__pct { width:40px; text-align:right; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.labor__pct--over { color:var(--warn); }
+.labor__splh { width:44px; text-align:right; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.banner { border-radius:var(--radius-card); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; }
+.banner__lead { display:flex; align-items:center; gap:10px; min-width:0; }
+.banner__text { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.banner__title { font-size:14px; font-weight:700; line-height:18px; }
+.banner__sub { font-size:12px; line-height:16px; }
+.banner--gold { background:var(--sunflower-gold); color:var(--deep-palm); }
+.banner--gold .banner__sub { color:var(--muted-2); }
+.banner--draft { background:var(--butter); border:1.5px solid var(--sunflower-gold); }
+.banner--draft .banner__title { color:var(--gold-deep); }
+.banner--draft .banner__sub { color:var(--muted); }
+.banner--published { background:var(--mint); border:1.5px solid var(--palm-green); }
+.banner--published .banner__title { color:var(--deep-palm); }
+.banner--published .banner__sub { color:var(--muted-2); }
+.banner--warn { background:var(--peach); align-items:flex-start; justify-content:flex-start; }
+.banner--warn .banner__title { font-size:13px; color:var(--warn-deep); }
+.banner--warn .banner__sub { font-size:13px; line-height:18px; color:var(--ink); }
+.banner--pending { border:1.5px dashed var(--mint-text); background:transparent; }
+.banner--pending .banner__title { font-size:12px; color:var(--muted); }
+.banner--pending .banner__sub { color:var(--muted); }
+.banner--dark { background:var(--deep-palm); color:var(--farm-cream); flex-direction:column; align-items:stretch; gap:10px; padding:14px 16px; }
+
+.app-mark { width:28px; height:28px; border-radius:8px; background:var(--sand); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; font-size:13px; color:var(--deep-palm); }
+.app-mark--square { background:var(--ink); }
+.app-mark--square::before { content:''; width:12px; height:12px; border:2.5px solid #fff; border-radius:2px; }
+
+.pace-tile { display:flex; flex-direction:column; gap:6px; padding:10px; border-radius:12px; background:var(--sand); border:1.5px solid transparent; }
+.pace-tile--behind { background:var(--peach); border-color:var(--orange); }
+.pace-tile__day { font-size:12px; font-weight:700; color:var(--ink); }
+.pace-tile__num { font-family:var(--font-display); font-weight:600; font-size:20px; line-height:22px; color:var(--ink); }
+.pace-tile__sub { font-size:11px; line-height:14px; color:var(--muted); }
+.pace-grid { display:grid; grid-template-columns:78px minmax(0,1fr) 56px 64px; gap:8px; align-items:center; min-height:34px; }
+.pace-grid--head { font-size:12px; font-weight:700; color:var(--muted); min-height:0; }
+.pace-grid--friday { background:var(--butter); border-radius:8px; padding:0 6px; margin:0 -6px; }
+.pace-grid__day { font-size:13px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.pace-grid--friday .pace-grid__day { font-weight:700; }
+.pace-grid__bars { display:flex; flex-direction:column; gap:2px; }
+.pace-grid__bar { height:6px; border-radius:0 3px 3px 0; background:var(--palm-green); min-width:2px; }
+.pace-grid__bar--ly { background:var(--mint-2); }
+.pace-grid__num { text-align:right; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.tag { font-size:11px; font-weight:700; color:var(--gold-deep); background:var(--butter); border-radius:4px; padding:1px 4px; letter-spacing:.02em; }
+
+.week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+.week__day { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 0; border-radius:12px; background:var(--card); min-height:44px; }
+.week__name { font-size:11px; font-weight:700; color:var(--muted-3); }
+.week__num { font-size:14px; font-weight:600; color:var(--muted-3); }
+.week__dot { width:6px; height:6px; border-radius:3px; background:transparent; }
+.week__day--shift .week__name, .week__day--shift .week__num { color:var(--ink); }
+.week__day--shift .week__dot { background:var(--palm-green); }
+.week__day--next { background:var(--deep-palm); }
+.week__day--next .week__name { color:var(--mint-text); }
+.week__day--next .week__num { color:var(--farm-cream); }
+.week__day--next .week__dot { background:var(--sunflower-gold); }
+.shift-row { display:flex; align-items:center; gap:12px; min-height:60px; padding:0 16px; border-bottom:1px solid var(--line); }
+.shift-row:last-child { border-bottom:0; }
+.shift-row__date { width:44px; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.shift-row__wd { font-size:11px; font-weight:700; color:var(--muted); }
+.shift-row__dn { font-family:var(--font-display); font-weight:600; font-size:20px; color:var(--ink); }
+.shift-hero-time { font-family:var(--font-display); font-weight:600; font-size:34px; line-height:38px; color:var(--farm-cream); }
+
+.sched { display:flex; gap:12px; align-items:center; min-height:40px; }
+.sched__time { width:54px; flex-shrink:0; font-size:13px; font-weight:700; color:var(--deep-palm); }
+.sched__time--wide { width:66px; }
+.sched__text { font-size:14px; color:var(--ink); line-height:18px; }
+
+.reach { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px 6px; border-radius:12px; background:var(--sand); min-height:64px; text-align:center; }
+.reach--urgent { background:var(--peach); }
+.reach__name { font-size:13px; font-weight:700; color:var(--ink); }
+.reach--urgent .reach__name { color:var(--warn-deep); }
+.reach__sub { font-size:12px; color:var(--muted); }
+
+.faq { display:flex; flex-direction:column; gap:4px; padding:12px 16px; border-bottom:1px solid var(--line); }
+.faq__q { font-size:14px; font-weight:700; color:var(--ink); }
+.faq__a { font-size:13px; line-height:18px; color:var(--muted-2); }
+.more-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; min-height:44px; width:100%; font-size:14px; font-weight:600; color:var(--deep-palm); }
+
+.dot { width:8px; height:8px; border-radius:4px; flex-shrink:0; margin-top:6px; background:var(--muted-3); }
+.dot--warn { background:var(--warn); }
+.dot--gold { background:var(--sunflower-gold); }
+.dot--ok { background:var(--palm-green); }
+.bullet { width:6px; height:6px; border-radius:3px; background:var(--palm-green); margin-top:7px; flex-shrink:0; }
+
+.brief-headline { font-family:var(--font-display); font-weight:600; font-size:20px; line-height:26px; color:var(--ink); margin:0; text-wrap:balance; }
+.source-row { display:flex; justify-content:space-between; gap:12px; font-size:12px; min-height:22px; align-items:center; }
+.source-row__k { color:var(--muted); }
+.source-row__v { font-weight:700; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+.textarea { width:100%; min-height:88px; border-radius:12px; border:1.5px solid var(--mint-text); background:var(--card); padding:12px 14px; font-size:15px; line-height:22px; resize:vertical; color:var(--ink); font-family:inherit; }
+.select { height:44px; border-radius:12px; border:1.5px solid var(--mint-text); background:var(--card); padding:0 12px; font-size:14px; font-weight:600; color:var(--ink); width:100%; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { min-height:44px; padding:0 14px; border-radius:12px; border:1.5px solid var(--mint-text); background:var(--card); font-size:13px; font-weight:700; color:var(--deep-palm); display:inline-flex; align-items:center; }
+.chip--on { background:var(--deep-palm); color:var(--farm-cream); border-color:var(--deep-palm); }
+.toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; width:100%; }
+.toggle__knob { width:46px; height:28px; border-radius:14px; background:var(--mint-2); position:relative; flex-shrink:0; transition:background .15s; }
+.toggle__knob::after { content:''; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:11px; background:#fff; transition:left .15s; box-shadow:0 1px 2px rgba(0,0,0,.15); }
+.toggle--on .toggle__knob { background:var(--palm-green); }
+.toggle--on .toggle__knob::after { left:21px; }
+.ext { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:12px; font-weight:700; color:var(--deep-palm); white-space:nowrap; }
+.error { font-size:13px; line-height:18px; color:var(--warn-deep); background:var(--peach); border-radius:12px; padding:12px 14px; }
+.special { display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:40px; border-bottom:1px solid var(--line); }
+.special:last-child { border-bottom:0; }
+.special__price { font-size:14px; font-weight:700; color:var(--ink); white-space:nowrap; }
+.hour-tile { display:flex; flex-direction:column; gap:2px; padding:10px; border-radius:12px; background:var(--sand); }
+.hour-tile__val { font-family:var(--font-display); font-weight:600; font-size:18px; color:var(--ink); }
+.stars { display:inline-flex; gap:1px; }
+.kv { display:flex; justify-content:space-between; gap:10px; font-size:13px; }
+.kv--sm { font-size:12px; }
+.kv__k { color:var(--ink); }
+.kv__k--muted { color:var(--muted); }
+.kv__v { font-weight:700; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+/* ---------------- New: season grid, campaigns, barn ---------------- */
+.sgrid { display:grid; grid-template-columns:64px minmax(0,1fr) 62px 48px; gap:8px; align-items:center; min-height:32px; }
+.sgrid--head { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; min-height:0; }
+.sgrid--weather { background:var(--peach); border-radius:8px; margin:0 -6px; padding:0 6px; }
+.sgrid__day { font-size:13px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:5px; }
+.sgrid__bars { display:flex; flex-direction:column; gap:2px; }
+.sgrid__bar { height:7px; border-radius:0 3px 3px 0; background:var(--palm-green); min-width:2px; }
+.sgrid__bar--ly { background:var(--mint-2); }
+.sgrid__bar--out { background:var(--orange); }
+.sgrid__num { text-align:right; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.sgrid__d { text-align:right; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
+.wk-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding-top:2px; }
+.wk-head__n { font-size:12px; font-weight:700; color:var(--deep-palm); }
+.wk-head__v { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.camp { display:flex; flex-direction:column; gap:6px; padding:11px 0; border-bottom:1px solid var(--line); }
+.camp:last-child { border-bottom:0; padding-bottom:0; }
+.camp__top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.camp__name { font-size:13px; font-weight:600; color:var(--ink); line-height:17px; }
+.camp__cpr { font-family:var(--font-display); font-weight:600; font-size:17px; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.camp__cpr--over { color:var(--warn); }
+.camp__bar { height:6px; border-radius:3px; background:var(--sand); position:relative; overflow:hidden; }
+.camp__bar > span { position:absolute; inset:0 auto 0 0; border-radius:3px; background:var(--palm-green); }
+.camp__bar > span.over { background:var(--orange); }
+.camp__meta { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.funnel { display:flex; flex-direction:column; gap:7px; }
+.funnel__row { display:flex; align-items:center; gap:10px; min-height:26px; }
+.funnel__k { width:104px; flex-shrink:0; font-size:13px; color:var(--ink); }
+.funnel__bar { flex:1; height:20px; border-radius:6px; background:var(--mint); position:relative; overflow:hidden; }
+.funnel__bar > span { position:absolute; inset:0 auto 0 0; background:var(--palm-green); border-radius:6px; }
+.funnel__bar > span.gold { background:var(--sunflower-gold); }
+.funnel__v { width:52px; text-align:right; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.evt { display:flex; gap:12px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--line); }
+.evt:last-child { border-bottom:0; padding-bottom:0; }
+.evt__date { width:46px; flex-shrink:0; text-align:center; }
+.evt__mo { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; }
+.evt__dy { font-family:var(--font-display); font-weight:600; font-size:20px; color:var(--ink); line-height:22px; }
+</style>
+<div class="samplebar" role="note">Sample data &mdash; every number on this page is invented for the demo</div>
+<div class="stage">
+  <aside class="rail" id="rail"></aside>
+  <div class="stage__main">
+    <div class="device">
+      <div class="device__scroll" id="app"></div>
+      <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Ananda Farm — clickable prototype
+   Sample data pinned to Sunday Oct 18 2026, 7:24 am farm time,
+   week 4 of fall-2026. Mirrors app/src/lib/mockData.ts.
+   ===================================================================== */
+var TODAY='2026-10-18', YEST='2026-10-17';
+var NOW=new Date('2026-10-18T07:24:00-04:00');
+var PULLED='2026-10-18T06:58:00-04:00';
+var TZ='America/New_York';
+function ET(d,hm){ return d+'T'+hm+':00-04:00'; }
+
+/* ---------------- formatting (mirrors lib/format.ts) ---------------- */
+function toDate(v){ if(v instanceof Date) return v; if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return new Date(v+'T12:00:00-04:00'); return new Date(v); }
+function fmt(v,o){ return new Intl.DateTimeFormat('en-US',Object.assign({timeZone:TZ},o)).format(toDate(v)); }
+function money(c,dec){ if(c==null||isNaN(c)) return '—'; return (c/100).toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:dec?2:0,maximumFractionDigits:dec?2:0}); }
+function moneyShort(c){ if(c==null||isNaN(c)) return '—'; var d=c/100, s=d<0?'−':'', a=Math.abs(d);
+  if(a>=1000000) return s+'$'+(a/1000000).toFixed(1).replace(/\.0$/,'')+'m';
+  if(a>=100000) return s+'$'+Math.round(a/1000)+'k';
+  if(a>=1000) return s+'$'+(a/1000).toFixed(1).replace(/\.0$/,'')+'k';
+  return s+'$'+Math.round(a).toLocaleString('en-US'); }
+function moneyExact(c){ return money(c,true); }
+function int(n){ if(n==null||isNaN(n)) return '—'; return Math.round(n).toLocaleString('en-US'); }
+function pctSigned(r,dg){ dg=dg||0; if(r==null||isNaN(r)) return '—'; var v=r*100, s=Math.abs(v).toFixed(dg);
+  if(Math.abs(v)<Math.pow(10,-dg)/2) return s+'%'; return (v>0?'+':'−')+s+'%'; }
+function pct(r,dg){ if(r==null||isNaN(r)) return '—'; return (r*100).toFixed(dg==null?1:dg)+'%'; }
+function delta(now,ly){ if(now==null||!ly) return null; return (now-ly)/ly; }
+function dayShort(v){ return fmt(v,{weekday:'short',month:'short',day:'numeric'}); }
+function dayLong(v){ return fmt(v,{weekday:'long',month:'short',day:'numeric'}); }
+function weekdayDay(v){ return fmt(v,{weekday:'short'})+' '+fmt(v,{day:'numeric'}); }
+function weekday(v,style){ return fmt(v,{weekday:style||'short'}); }
+function monShort(v){ return fmt(v,{month:'short'}); }
+function dayNum(v){ return fmt(v,{day:'numeric'}); }
+function dateRange(a,b){ var sm=monShort(a), em=monShort(b);
+  return sm===em ? sm+' '+dayNum(a)+'–'+dayNum(b) : sm+' '+dayNum(a)+' – '+em+' '+dayNum(b); }
+function timeShort(v){ return fmt(v,{hour:'numeric',minute:'2-digit'}).toLowerCase(); }
+function weekdayTime(v){ return fmt(v,{weekday:'short'})+' '+timeShort(v); }
+function clock(v){ return fmt(v,{hour:'numeric',minute:'2-digit'}).replace(/\s?[AP]M/i,''); }
+function timeRange(a,b,both){ return both ? timeShort(a)+' – '+timeShort(b) : clock(a)+' – '+timeShort(b); }
+function hoursLen(a,b){ var h=(toDate(b)-toDate(a))/3600000; return h.toFixed(1).replace(/\.0$/,'')+' hrs'; }
+function addDays(d,n){ var x=new Date(d+'T12:00:00Z'); x.setUTCDate(x.getUTCDate()+n); return x.toISOString().slice(0,10); }
+function deg(f){ return f==null?'—':Math.round(f)+'°'; }
+function initials(n){ if(!n) return '?'; var p=n.replace(/@.*/,'').split(/[\s._-]+/).filter(Boolean);
+  return p.slice(0,2).map(function(x){return x[0].toUpperCase();}).join('')||'?'; }
+function greeting(at){ var h=Number(new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hour12:false}).format(at));
+  return h<12?'Good morning':h<17?'Good afternoon':'Good evening'; }
+function farmHour(v){ return Number(new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hour12:false}).format(new Date(v)))%24; }
+function hourLabel(iso,style){ var t=timeShort(iso).split(' '); var h=t[0].split(':')[0];
+  return style==='short' ? h+t[1][0] : h+' '+t[1]; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function holidayAnchorLabel(a){ var m=a.match(/^(\w+)-(sun|mon|tue|wed|thu|fri|sat)-(before|after)$/); if(!m) return a.replace(/-/g,' ');
+  var days={sun:'Sunday',mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday'};
+  return 'The '+days[m[2]]+' '+m[3]+' '+m[1].charAt(0).toUpperCase()+m[1].slice(1); }
+function comparablePhrase(day,week,anchor){ if(anchor) return holidayAnchorLabel(anchor)+' last fall';
+  return 'Same '+weekday(day,'long')+', week '+week+' last fall'; }
+
+/* ---------------- icons ---------------- */
+function ic(path,o){ o=o||{}; var s=o.size||22, c=o.color||'currentColor', w=o.strokeWidth||2;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="'+w+
+    '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'+(o.style?' style="'+o.style+'"':'')+'>'+path+'</svg>'; }
+var I={
+  home:function(o){return ic('<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',o);},
+  chart:function(o){return ic('<path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/>',o);},
+  doc:function(o){return ic('<path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/>',o);},
+  list:function(o){return ic('<path d="M4 5h16M4 12h16M4 19h10"/>',o);},
+  dots:function(o){return ic('<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',o);},
+  bookmark:function(o){return ic('<path d="M16 4H8a2 2 0 0 0-2 2v14l6-3 6 3V6a2 2 0 0 0-2-2z"/>',o);},
+  cal:function(o){return ic('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',o);},
+  square:function(o){return ic('<path d="M7 3v18M17 3v18M3 8h4M3 13h4M17 8h4M17 13h4"/>',o);},
+  sun:function(o){return ic('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',o);},
+  rain:function(o){return ic('<path d="M7 16a4 4 0 0 1-.9-7.9A5.5 5.5 0 0 1 17 8a3.5 3.5 0 0 1 .5 7"/><path d="M8 19v2M12 18v3M16 19v2"/>',o);},
+  cloud:function(o){return ic('<path d="M7 18a4 4 0 0 1-.9-7.9A5.5 5.5 0 0 1 17 10a3.5 3.5 0 0 1 .5 8z"/>',o);},
+  up:function(o){return ic('<path d="M12 19V5M5 12l7-7 7 7"/>',Object.assign({strokeWidth:3},o));},
+  down:function(o){return ic('<path d="M12 5v14M19 12l-7 7-7-7"/>',Object.assign({strokeWidth:3},o));},
+  starO:function(o){return ic('<path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',o);},
+  ext:function(o){return ic('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',Object.assign({size:14,strokeWidth:2.4},o));},
+  chev:function(o){return ic('<path d="M9 6l6 6-6 6"/>',Object.assign({size:16,strokeWidth:2.2},o));},
+  check:function(o){return ic('<path d="M5 12l5 5L20 7"/>',Object.assign({strokeWidth:2.4},o));},
+  checkC:function(o){return ic('<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',Object.assign({strokeWidth:2.4},o));},
+  plus:function(o){return ic('<path d="M12 5v14M5 12h14"/>',Object.assign({strokeWidth:2.2},o));},
+  alert:function(o){return ic('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',Object.assign({strokeWidth:2.2},o));},
+  bell:function(o){return ic('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/>',o);},
+  user:function(o){return ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',o);},
+  book:function(o){return ic('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V5.5M8 7h8"/>',o);},
+  search:function(o){return ic('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',Object.assign({size:18,strokeWidth:2.2},o));},
+  pulse:function(o){return ic('<path d="M3 12h4l3-8 4 16 3-8h4"/>',o);},
+  barn:function(o){return ic('<path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/>',o);},
+  logout:function(o){return ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',o);}
+};
+function star(size){ size=size||18; return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="#F2B830" stroke="#B8860B" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>'; }
+function starEmpty(size){ return I.starO({size:size||14,color:'var(--mint-2)'}); }
+</script>
+<script>
+/* =============================== DATA =============================== */
+var ROLE_LABEL={owner:'Owner',coo:'COO',ops:'Operations',fnb:'Food & beverage',marketing:'Marketing',retail:'Retail',staff:'Staff'};
+var ALL_ROLES=['owner','coo','ops','fnb','marketing','retail','staff'];
+var USERS={
+  owner:{name:'Chris Bennett',email:'chris@anandafarm.com'},
+  coo:{name:'Jen Novak',email:'jen@anandafarm.com'},
+  ops:{name:'Sasha Alvarez',email:'sasha@anandafarm.com'},
+  fnb:{name:'Riley Santos',email:'riley@anandafarm.com'},
+  marketing:{name:'Ryan Mercer',email:'ryan@anandafarm.com'},
+  retail:{name:'Kyleen Lawson',email:'kyleen@anandafarm.com',zone:'Farm Store'},
+  staff:{name:'Maya Rivera',email:'maya@anandafarm.com',zone:"Kristy's Bar",job:'bartender'}
+};
+var SEASON={season:'fall-2026',kind:'fall',opens_on:'2026-09-25',closes_on:'2026-11-08',prior:'fall-2025'};
+var FARM_HOURS={gates:'10:00',lastEntry:'6:00',close:'7:00'};
+var LABOR_TARGET=0.26;
+var LINKS={square:'https://squareup.com/dashboard/',timecards:'https://squareup.com/dashboard/team/timecards',
+  items:'https://squareup.com/dashboard/items/library',team:'https://squareup.com/dashboard/team/schedule',
+  honeybook:'https://www.honeybook.com/app',ticketspice:'https://manage.webconnex.com/',gbp:'https://business.google.com/'};
+
+function seasonWeek(day){ return Math.floor((new Date(day+'T12:00:00Z')-new Date('2026-09-25T12:00:00Z'))/86400000/7)+1; }
+
+/* Every operating day of fall-2026 so far. Revenue and labor in cents. */
+var DAYS=[
+  {day:'2026-09-25',rev:3840000,att:1390,lyDay:'2025-09-26',lyRev:3120000,lyAtt:1180,call:'open'},
+  {day:'2026-09-26',rev:7720000,att:2790,lyDay:'2025-09-27',lyRev:6840000,lyAtt:2510,call:'open'},
+  {day:'2026-09-27',rev:5490000,att:1980,lyDay:'2025-09-28',lyRev:5210000,lyAtt:1930,call:'open'},
+  {day:'2026-10-02',rev:980000,att:380,lyDay:'2025-10-03',lyRev:2960000,lyAtt:1140,call:'rainout'},
+  {day:'2026-10-03',rev:7130000,att:2570,lyDay:'2025-10-04',lyRev:6190000,lyAtt:2290,call:'open'},
+  {day:'2026-10-04',rev:5616000,att:2030,lyDay:'2025-10-05',lyRev:5430000,lyAtt:2010,call:'open'},
+  {day:'2026-10-09',rev:4320000,att:1560,lyDay:'2025-10-10',lyRev:3470000,lyAtt:1280,call:'open'},
+  {day:'2026-10-10',rev:7344000,att:2650,lyDay:'2025-10-11',lyRev:6980000,lyAtt:2600,call:'open'},
+  {day:'2026-10-11',rev:6048000,att:2180,lyDay:'2025-10-12',lyRev:5810000,lyAtt:2150,call:'open'},
+  {day:'2026-10-16',rev:4752000,att:1720,lyDay:'2025-10-17',lyRev:3890000,lyAtt:1430,call:'open'},
+  {day:'2026-10-17',rev:8640000,att:3120,lyDay:'2025-10-18',lyRev:7920000,lyAtt:2940,call:'open'}
+];
+DAYS.forEach(function(d){ d.week=seasonWeek(d.day); });
+
+var YESTERDAY={
+  day:YEST,week:4,comparable_day:'2025-10-18',
+  ticket_revenue_cents:2899200,fnb_net_cents:4120000,retail_net_cents:1620800,blended_revenue_cents:8640000,
+  tickets_sold:3260,attendance:3120,per_cap_cents:1840,transactions_per_guest:1.31,
+  labor_cents:1383500,labor_hours:612,labor_pct_of_net:0.241,
+  feels_like_high_f:88,high_f:84,precip_in:0,weather_summary:'Sunny and humid',
+  ly_blended_revenue_cents:7920000,ly_attendance:2940,ly_per_cap_cents:1710,ly_fnb_net_cents:3678600,ly_retail_net_cents:1348800,
+  ly_feels_like_high_f:84,ly_precip_in:0.12,ly_weather_summary:'PM showers',
+  blended_delta_pct:0.0909,attendance_delta_pct:0.0612,pulled_at:PULLED
+};
+var TODAY_SO_FAR={
+  day:TODAY,week:4,comparable_day:'2025-10-19',
+  ticket_revenue_cents:0,fnb_net_cents:0,retail_net_cents:0,blended_revenue_cents:0,
+  tickets_sold:1860,attendance:0,per_cap_cents:null,
+  feels_like_high_f:86,high_f:83,weather_summary:'Partly sunny, 35% rain around 3 pm',
+  ly_blended_revenue_cents:6120000,ly_attendance:2310,ly_per_cap_cents:1680,
+  ly_feels_like_high_f:85,ly_precip_in:0,ly_weather_summary:'Sunny',
+  blended_delta_pct:null,attendance_delta_pct:null,pulled_at:ET(TODAY,'07:15')
+};
+
+var ZONES_FNB=[
+  {zone:'The Nest',net:1410000,ly:1283100,laborPct:0.23,splh:14200,orders:1080,disc:124000},
+  {zone:'Twisted Roots',net:960000,ly:818800,laborPct:0.19,splh:18800,orders:610,disc:42000},
+  {zone:'Pizza Shop',net:780000,ly:847800,laborPct:0.32,splh:9600,orders:940,disc:106000},
+  {zone:"Kristy's Bar",net:560000,ly:462000,laborPct:0.16,splh:21000,orders:470,disc:30000},
+  {zone:'Donut & Coffee',net:410000,ly:339300,laborPct:0.22,splh:13100,orders:990,disc:66000}
+];
+var ZONES_RETAIL=[
+  {zone:'Farm Store',net:1140000,ly:986400,laborPct:0.18,splh:24600,orders:1320,disc:21000},
+  {zone:'Pumpkin Patch',net:480800,ly:362400,laborPct:0.12,splh:31200,orders:590,disc:4000}
+];
+[ZONES_FNB,ZONES_RETAIL].forEach(function(g){ g.forEach(function(z){
+  z.labor_cents=Math.round(z.net*z.laborPct); z.labor_hours=Math.round(z.net/z.splh);
+  z.refunds=Math.round(z.disc*0.08); z.delta=(z.net-z.ly)/z.ly;
+}); });
+
+var HOURLY_FNB=[10,22,44,56,50,38,34,40,30,12].map(function(px,i){
+  return {hour:ET(YEST,String(10+i).padStart(2,'0')+':00'),net:Math.round(px/56*690000),orders:Math.round(px*3.4)}; });
+var HOURLY_RETAIL=[6,14,24,30,36,40,44,38,20,8].map(function(px,i){
+  return {hour:ET(YEST,String(10+i).padStart(2,'0')+':00'),net:Math.round(px/44*262000),orders:Math.round(px*2.1)}; });
+
+var TOP_FNB=[
+  {name:'Apple cider donuts',cat:'Bakery',qty:1240,net:372000},
+  {name:'Cheese pizza slice',cat:'Pizza',qty:860,net:430000},
+  {name:'Sunflower lemonade',cat:'Drinks',qty:790,net:395000},
+  {name:'Draft beer 16 oz',cat:'Bar',qty:610,net:488000}];
+var TOP_RETAIL=[
+  {name:'Small pumpkin',cat:'Patch',qty:640,net:320000},
+  {name:'Sunflower bouquet',cat:'Farm Store',qty:410,net:492000},
+  {name:'Ananda tee',cat:'Apparel',qty:180,net:504000},
+  {name:'Local honey 12 oz',cat:'Pantry',qty:150,net:195000}];
+
+var FORECASTS={};
+FORECASTS[TODAY]={day:TODAY,high_f:83,low_f:68,feels:86,prob:35,rainHours:1,summary:'Partly sunny, 35% rain around 3 pm'};
+FORECASTS['2026-10-23']={day:'2026-10-23',high_f:82,low_f:66,feels:84,prob:10,rainHours:0,summary:'Sunny'};
+FORECASTS['2026-10-24']={day:'2026-10-24',high_f:81,low_f:70,feels:84,prob:60,rainHours:4,summary:'Showers likely'};
+FORECASTS['2026-10-25']={day:'2026-10-25',high_f:80,low_f:64,feels:82,prob:15,rainHours:0,summary:'Sunny'};
+FORECASTS[YEST]={day:YEST,high_f:84,low_f:67,feels:88,prob:10,rainHours:0,summary:'Sunny and humid'};
+
+var PACING=[
+  {day:TODAY,lyDay:'2025-10-19',daysOut:0,sold:1860,lySold:1706,lyAtt:2310,anchor:null},
+  {day:'2026-10-23',lyDay:'2025-10-24',daysOut:5,sold:410,lySold:380,lyAtt:1180,anchor:null},
+  {day:'2026-10-24',lyDay:'2025-10-25',daysOut:6,sold:1980,lySold:2210,lyAtt:3050,anchor:null},
+  {day:'2026-10-25',lyDay:'2025-10-26',daysOut:7,sold:1120,lySold:1050,lyAtt:2260,anchor:null},
+  {day:'2026-10-30',lyDay:'2025-10-24',daysOut:12,sold:260,lySold:188,lyAtt:1180,anchor:'halloween-fri-before'},
+  {day:'2026-10-31',lyDay:'2025-10-25',daysOut:13,sold:1540,lySold:1413,lyAtt:3050,anchor:'halloween-sat-before'}
+];
+PACING.forEach(function(p){ p.forecast=FORECASTS[p.day]||null; });
+var DESIGN_DAY=2990;
+
+var HOURLY_WX=[['07',74,76,5],['08',76,78,5],['09',77,78,5],['10',79,81,10],['11',81,83,10],['12',82,85,15],
+  ['13',83,86,20],['14',83,86,30],['15',83,86,35],['16',82,84,25],['17',80,82,15],['18',78,79,10],['19',76,77,5]]
+  .map(function(r){ return {hour:ET(TODAY,r[0]+':00'),temp:r[1],feels:r[2],prob:r[3]}; });
+
+var INCIDENTS=[
+  {id:'inc-1',source:'app',at:ET(YEST,'15:15'),by:'Sasha',loc:'Hayride loading',
+   summary:'Guest slip near hayride loading, minor, first aid given',
+   details:'Wet grass at the loading ramp. Guest declined further care.',sev:'minor',confirmed:false,status:'open'},
+  {id:'inc-2',source:'email',at:ET(YEST,'18:40'),by:'Michelle',loc:'Pizza Shop',
+   summary:'Walk-in cooler at Pizza Shop reading 44°',
+   details:'Maintenance notified. Product moved to The Nest walk-in overnight.',sev:'minor',confirmed:true,status:'open'},
+  {id:'inc-0',source:'sharepoint',at:ET('2026-10-11','14:05'),by:'Devon',loc:'Corn maze',
+   summary:'Lost child reunited within 10 minutes',details:null,sev:'info',confirmed:true,status:'closed'}
+];
+
+var REVIEWS=[
+  {id:'r1',rating:5,author:'Dana P.',body:'Sunflowers were unreal. Kids loved the hayride.',at:ET('2026-10-12','19:10'),reply:'Thank you, Dana!',draft:null},
+  {id:'r2',rating:5,author:'Marcus T.',body:'Best cider donuts in Manatee County.',at:ET('2026-10-13','12:40'),reply:'So glad you enjoyed them!',draft:null},
+  {id:'r3',rating:5,author:'Priya K.',body:'Live music at The Nest made our afternoon.',at:ET('2026-10-16','20:20'),reply:'Thanks Priya, see you next weekend.',draft:null},
+  {id:'r4',rating:5,author:'Alex R.',body:'Clean, friendly, well run.',at:ET(YEST,'13:15'),reply:null,draft:'Thank you, Alex. Our team will love hearing this.'},
+  {id:'r5',rating:4,author:'Sam W.',body:'Great day, parking took a while.',at:ET(YEST,'16:50'),reply:'Thanks Sam. We added a second parking lane for the rest of the season.',draft:null},
+  {id:'r6',rating:3,author:'Jordan L.',body:'Loved the sunflowers but waited 30 min for pizza and the line had no shade.',at:ET(YEST,'17:35'),reply:null,
+   draft:'Jordan, thank you for the honest note. We are adding a second oven and shade sails at the Pizza Shop line for the Halloween weekend. We hope you will give us another try.'}
+];
+
+var EVENTS=[
+  {id:'e1',source:'manual',title:'Gates open · hayride first run 10:15',kind:'other',start:ET(TODAY,'10:00'),end:null,loc:'Gate',staffNote:null},
+  {id:'e2',source:'outlook',title:'Live music, The Nest stage · set 1 of 3',kind:'music',start:ET(TODAY,'12:00'),end:ET(TODAY,'16:45'),loc:'The Nest',staffNote:'Live music at The Nest stage, three sets',timeLabel:'12, 2, 4'},
+  {id:'e3',source:'honeybook',title:'Barn tour · 2 wedding prospects',kind:'barn',start:ET(TODAY,'14:00'),end:ET(TODAY,'15:00'),loc:'The Barn',staffNote:'Barn tour for two couples. Keep golf carts off the barn lawn until 3.'},
+  {id:'e4',source:'manual',title:'Last entry · gates close 7:00',kind:'other',start:ET(TODAY,'18:00'),end:ET(TODAY,'19:00'),loc:'Gate',staffNote:null},
+  {id:'e5',source:'outlook',title:'Bradenton Herald photographer on site',kind:'press',start:ET(TODAY,'10:00'),end:ET(TODAY,'19:00'),loc:null,staffNote:'Photographer from the Bradenton Herald, ask Ryan before posing guests.',timeLabel:'All day'},
+  {id:'e6',source:'outlook',title:'Friday live music',kind:'music',start:ET('2026-10-23','18:00'),end:ET('2026-10-23','21:00'),loc:'The Nest',staffNote:'Friday live music, stage closes 9'},
+  {id:'e7',source:'honeybook',title:'Ramirez–Cole wedding · barn walkthrough',kind:'barn',start:ET('2026-10-24','11:00'),end:ET('2026-10-24','12:30'),loc:'The Barn',staffNote:'Barn walkthrough, north lot only.'},
+  {id:'e8',source:'manual',title:'Halloween weekend setup · maze lighting',kind:'other',start:ET('2026-10-25','08:00'),end:ET('2026-10-25','10:00'),loc:'Corn maze',staffNote:null}
+];
+
+var MAYA='tm-maya';
+var SHIFTS=[
+  {id:'s1',tm:MAYA,name:'Maya Rivera',zone:"Kristy's Bar",job:'bartender',day:'2026-10-23',start:ET('2026-10-23','15:00'),end:ET('2026-10-23','21:30'),published:true,note:"Kristy's Bar · Friday live music, stage closes 9"},
+  {id:'s2',tm:MAYA,name:'Maya Rivera',zone:"Kristy's Bar",job:'bartender',day:'2026-10-24',start:ET('2026-10-24','11:00'),end:ET('2026-10-24','19:30'),published:true,note:"Kristy's Bar · with Devon, Priya, Cole"},
+  {id:'s3',tm:MAYA,name:'Maya Rivera',zone:'Twisted Roots',job:'bartender',day:'2026-10-25',start:ET('2026-10-25','11:00'),end:ET('2026-10-25','17:30'),published:false,note:'Twisted Roots · covering for Sam'},
+  {id:'s4',tm:'tm-devon',name:'Devon',zone:"Kristy's Bar",job:'bar lead',day:'2026-10-24',start:ET('2026-10-24','10:30'),end:ET('2026-10-24','19:30'),published:true},
+  {id:'s5',tm:'tm-priya',name:'Priya',zone:"Kristy's Bar",job:'bartender',day:'2026-10-24',start:ET('2026-10-24','11:00'),end:ET('2026-10-24','19:30'),published:true},
+  {id:'s6',tm:'tm-cole',name:'Cole',zone:"Kristy's Bar",job:'bar back',day:'2026-10-24',start:ET('2026-10-24','12:00'),end:ET('2026-10-24','19:30'),published:true},
+  {id:'s7',tm:'tm-devon',name:'Devon',zone:"Kristy's Bar",job:'bar lead',day:'2026-10-23',start:ET('2026-10-23','15:00'),end:ET('2026-10-23','21:30'),published:true},
+  {id:'open-1',tm:null,name:null,zone:'The Nest',job:'bar back',day:'2026-10-24',start:ET('2026-10-24','16:00'),end:ET('2026-10-24','21:30'),published:true},
+  {id:'open-2',tm:null,name:null,zone:'Gate',job:'greeter',day:'2026-10-25',start:ET('2026-10-25','09:30'),end:ET('2026-10-25','14:00'),published:true}
+];
+
+var MARKETING={windowDays:7,blendedCpr:313,priorCpr:348,sessions:6840,checkouts:412,
+  channels:[{name:'Meta',spend:214000,cpr:286},{name:'Google',spend:132000,cpr:371}],
+  mix:[{name:'Paid social',share:0.38},{name:'Organic + direct',share:0.47},{name:'Email',share:0.15}]};
+var CAMPAIGNS=[
+  {ch:'Meta',name:'Fall 2026 · Sunflower reels · Advantage+',spend:98000,red:402,status:'ok'},
+  {ch:'Meta',name:'Fall 2026 · Retargeting · site visitors 30d',spend:61000,red:214,status:'ok'},
+  {ch:'Meta',name:'Halloween weekend · lookalike 1%',spend:55000,red:132,status:'watch'},
+  {ch:'Google',name:'Search · brand',spend:29000,red:168,status:'ok'},
+  {ch:'Google',name:'Search · pumpkin patch near me',spend:64000,red:142,status:'ok'},
+  {ch:'Google',name:'Performance Max · fall season',spend:39000,red:46,status:'watch'}
+];
+CAMPAIGNS.forEach(function(c){ c.cpr=Math.round(c.spend/c.red); });
+var CREATIVES=[
+  {name:'Sunflower drone opener · 9:16',ch:'Meta',impr:184000,ctr:0.021,cpr:224},
+  {name:'Cider donut close-up · 9:16',ch:'Meta',impr:96000,ctr:0.018,cpr:268},
+  {name:'"Two weekends left" card · 1:1',ch:'Meta',impr:71000,ctr:0.009,cpr:512}
+];
+var BARN={inquiries30:14,lyInquiries30:11,tours30:6,booked30:3,depositsCents:1850000,held2027:9,contracted2027Cents:8640000,
+  funnel:[{k:'Inquiries',v:14},{k:'Tours booked',v:6},{k:'Proposals sent',v:5},{k:'Contracts signed',v:3}],
+  events:[
+    {date:'2026-11-07',title:'Ramirez–Cole wedding',sub:'140 guests · barn + lawn · 4 pm ceremony',pill:'Deposit paid'},
+    {date:'2026-11-21',title:'Gulf Coast Realty · holiday party',sub:'60 guests · barn only · 6 pm',pill:'Balance due'},
+    {date:'2026-12-05',title:'Nguyen wedding',sub:'110 guests · barn + lawn · 5 pm ceremony',pill:'Deposit paid'}
+  ]};
+
+var BRIEFS=[
+  {id:'brief-wk3',kind:'weekly',start:'2026-10-09',end:'2026-10-11',status:'draft',week:3,
+   headline:'Best week 3 on record, carried by Saturday and a dry Sunday.',
+   bullets:['Blended revenue $179,100, up 11% on the same three days last fall; attendance 6,390, up 5%.',
+     "Per cap $18.10 vs $16.90 LY. Twisted Roots and Kristy's Bar drove the gain; Pizza Shop was flat.",
+     'Friday attendance 1,560, up 22%, the strongest Friday growth of the season so far.',
+     'Labor 24.8% of net across F&B; Pizza Shop ran 31% on Saturday.',
+     'Seven new reviews, 4.8 average; one 3-star about the pizza line, replied Sunday.'],
+   risk:'Saturday Oct 24 pacing 10% behind LY with a 60% rain forecast.',
+   ask:'Approve a second pizza oven rental for the Halloween weekend.',
+   source:[['Blended revenue, wk 3 vs wk 3 LY','$179,100 / $162,600'],['Redemptions, wk 3 vs LY','6,390 / 6,030'],
+     ['Friday redemptions vs LY','1,560 / 1,280'],['Saturday redemptions vs LY','2,650 / 2,600'],
+     ['Sunday redemptions vs LY','2,180 / 2,150'],['Per cap vs LY','$18.10 / $16.90'],
+     ['F&B net vs LY','$96,400 / $86,100'],['Retail net vs LY','$47,300 / $39,300'],
+     ['Twisted Roots net vs LY','$22,800 / $18,900'],["Kristy's Bar net vs LY",'$13,100 / $10,600'],
+     ['Pizza Shop net vs LY','$18,200 / $18,100'],['Labor % of net, F&B','24.8%'],
+     ['Pizza Shop labor %, Saturday','31%'],['New reviews / average','7 / 4.8']],
+   verified:true,model:'claude-sonnet',draftedAt:ET('2026-10-12','05:31'),approvedBy:null,publishedAt:null},
+  {id:'brief-wk2',kind:'weekly',start:'2026-10-02',end:'2026-10-04',status:'published',week:2,
+   headline:'A wet Friday, then two strong days; per cap held above $17.',
+   bullets:['Blended revenue $137,300, down 3% on week 2 last fall; attendance 4,980, down 8% after the Friday rainout.',
+     'Per cap $17.40 vs $16.30 LY, led by The Nest and the new cider mule.',
+     'Friday was called Rained Out at 7:30; 612 rain checks issued, 480 already redeemed.',
+     'Labor 25.9% of net across F&B, inside target.','Five new reviews, 4.9 average.'],
+   risk:'Small pumpkin inventory will not last past week 4 at the current pace.',
+   ask:'Approve a second pumpkin delivery for Oct 16.',
+   source:[['Blended revenue, wk 2 vs wk 2 LY','$137,300 / $141,800'],['Redemptions, wk 2 vs LY','4,980 / 5,440'],
+     ['Per cap vs LY','$17.40 / $16.30'],['Rain checks issued / redeemed','612 / 480'],
+     ['Labor % of net, F&B','25.9%'],['New reviews / average','5 / 4.9']],
+   verified:true,model:'claude-sonnet',draftedAt:ET('2026-10-05','05:30'),approvedBy:'Jen',publishedAt:ET('2026-10-05','07:02')}
+];
+
+var NOTES=[
+  {id:'n-log-1',day:YEST,author:'Jen',audience:['leadership'],kind:'log',ack:false,at:ET(YEST,'21:40'),
+   body:"Kristy's Bar ran two bartenders short Saturday; covered from The Nest. Corn maze line hit 25 minutes at 2 pm. Retail sold out of the small pumpkins by 4."},
+  {id:'n-ann-1',day:TODAY,author:'Jen',audience:['staff','leadership'],kind:'announcement',ack:true,at:ET(TODAY,'07:35'),
+   body:'Corn maze lines hit 25 minutes yesterday afternoon. Between 1 and 3, send guests toward the hayride and the sunflower field first. Radio channel 2 if the line passes the fence post.',
+   ackCount:31,ackTotal:58,ackedByMe:false},
+  {id:'n-today-1',day:TODAY,author:'Jen',audience:['staff','leadership'],kind:'log',ack:false,at:ET(TODAY,'07:35'),
+   body:'Expecting a busy Sunday, around 2,500 guests. If it rains at 3, the hayride and zip line pause; everything else stays open.'},
+  {id:'n-sp-1',day:TODAY,author:'Riley',audience:['staff','fnb','leadership'],kind:'special',ack:false,at:ET(TODAY,'06:50'),
+   body:'Fall harvest pizza · Pizza Shop · butternut, sage, goat cheese · $6 / slice'},
+  {id:'n-sp-2',day:TODAY,author:'Riley',audience:['staff','fnb','leadership'],kind:'special',ack:false,at:ET(TODAY,'06:51'),
+   body:"Cider mule · Twisted Roots and Kristy's · local cider, ginger beer · $11"},
+  {id:'n-sp-3',day:TODAY,author:'Riley',audience:['staff','fnb','leadership'],kind:'special',ack:false,at:ET(TODAY,'06:52'),
+   body:'Pumpkin spice donut · Donut & Coffee · half dozen deal until noon · $3 · 6 for $15'},
+  {id:'n-86-1',day:TODAY,author:'Sasha',audience:['staff','leadership'],kind:'eighty_six',ack:false,at:ET(TODAY,'07:05'),
+   body:"Small pumpkins sold out. Apple cider donuts limited after 4 pm. Kristy's is out of the oat milk."}
+];
+
+var WHO_TO_REACH=[{label:'First aid',sub:'Radio ch 1',urgent:true},{label:'Ops · Sasha',sub:'Radio ch 2'},{label:'Manager',sub:'Radio ch 3'}];
+var FAQ_TOTAL=24;
+var GUEST_FAQ=[
+  {q:'"It’s raining, can we get a refund?"',a:'Tickets are date-specific. If we call a Rained-Out Day, their ticket becomes a rain check for any remaining day this season. For showers, some attractions pause and reopen; no refunds. Send them to the gate for the rain check.',tags:['rain','rain check','refund','weather']},
+  {q:'"Can we leave and come back?"',a:'Yes, same day with the wristband. Last entry is 6 pm.',tags:['re-entry','leave','wristband']},
+  {q:'"Where’s the closest restroom / water / shade?"',a:'Restrooms by The Nest and behind the Pizza Shop. Water refill at both bars. Shade at the pavilion and under the oaks by the sunflower field.',tags:['restroom','bathroom','water','shade']},
+  {q:'"Are dogs allowed?"',a:'Leashed dogs are welcome everywhere except the food areas and the hayride. Water bowls are at both bars.',tags:['dogs','pets']},
+  {q:'"Can we bring a stroller or wagon?"',a:'Yes. Paths are grass and packed shell; wagons are easier than strollers in the sunflower field.',tags:['strollers','wagon','kids']},
+  {q:'"Do you take cash?"',a:'Card and tap only at every register. The gate can convert cash to a gift card.',tags:['cash','card','payment']},
+  {q:'"Can we pick our own sunflowers?"',a:'Yes, $2 a stem in the marked rows. Clippers and buckets are at the field entrance.',tags:['sunflowers','pick','flowers']},
+  {q:'"Is the corn maze scary?"',a:'No. It is a daytime family maze, about 30 minutes. Last entry 5:30.',tags:['maze','corn','scary']},
+  {q:'"Where do we park for the Barn event?"',a:'Barn guests use the north lot and check in at the Barn gate, not the main gate.',tags:['barn','parking','wedding']},
+  {q:'"Do you sell alcohol?"',a:"Beer, wine and cider at Twisted Roots and Kristy's Bar. ID everyone who looks under 40. Drinks stay inside the fence.",tags:['alcohol','beer','bar','id']}
+];
+var ATTRACTIONS=[
+  {name:'Hayride',sub:'Every 20 min from the big oak · pauses in rain',status:'Running'},
+  {name:'Corn maze',sub:'About 30 min · last entry 5:30',status:'Running'},
+  {name:'Zip line',sub:'Ages 6+, 45–250 lb · closes in wind or lightning',status:'Wait 20 min'},
+  {name:'Sunflower field',sub:'$2 a stem · clippers at the field entrance',status:'Running'},
+  {name:'Pumpkin patch',sub:'Small pumpkins sold out · mediums and larges only',status:'Running'}
+];
+var WEATHER_CALL_LABEL={open:'Open as usual',delayed:'Delayed to noon',rainout:'Rained out',closed:'Closed'};
+var WEATHER_CALL_NOTE={
+  unset:'Not called yet. Pick one by 7:30 so the staff app and the owner cockpit show the right status.',
+  open:'Saved to today’s season-day record. Owners see "Open as usual" on the cockpit; nothing else is sent.',
+  delayed:'Saved. Posts the delayed-opening notice to the channel and tags today so LY comparisons show the delay.',
+  rainout:'Saved. Tags today as rained out, excludes it from LY baselines, and alerts Jen and the owners.',
+  closed:'Saved. Tags today as closed and excludes it from LY baselines.'};
+
+/* ---------------- mutable prototype state ---------------- */
+var S={
+  role:'owner', route:'/today',
+  seasonDays:{}, notes:NOTES.map(function(n){return Object.assign({},n);}),
+  briefs:BRIEFS.map(function(b){return Object.assign({},b);}),
+  heroView:'yesterday', ownerView:false, briefId:null, showAllSource:false,
+  guideQ:'', allFaq:false, allAttractions:false, fbDept:'fnb',
+  noteKind:'log', noteBody:'', noteToStaff:false, toast:null, pushOn:false, seasonView:'revenue'
+};
+S.seasonDays[TODAY]={day:TODAY,week:4,call:null,calledAt:null};
+S.seasonDays[YEST]={day:YEST,week:4,call:'open',calledAt:ET(YEST,'07:28')};
+function seasonDay(d){ return S.seasonDays[d]||{day:d,week:seasonWeek(d),call:null,calledAt:null}; }
+</script>
+<script>
+/* ============================ DERIVED ============================ */
+function dailyFor(day){ if(day===YEST) return YESTERDAY; if(day===TODAY) return TODAY_SO_FAR;
+  var d=DAYS.filter(function(x){return x.day===day;})[0]; return d?{day:d.day,week:d.week,blended_revenue_cents:d.rev,attendance:d.att,
+    ly_blended_revenue_cents:d.lyRev,ly_attendance:d.lyAtt,blended_delta_pct:delta(d.rev,d.lyRev),pulled_at:PULLED}:null; }
+function recentDays(n){ return DAYS.slice(-n); }
+function seasonToDate(){
+  var counted=DAYS.filter(function(d){return d.call==='open';});
+  var rev=0,att=0,lyRev=0,lyAtt=0,allRev=0,allAtt=0,wx=0;
+  DAYS.forEach(function(d){ allRev+=d.rev; allAtt+=d.att; if(d.call!=='open') wx++; });
+  counted.forEach(function(d){ rev+=d.rev; att+=d.att; lyRev+=d.lyRev; lyAtt+=d.lyAtt; });
+  return {days:DAYS.length,weatherDays:wx,comparableDays:counted.length,rev:allRev,att:allAtt,
+    revC:rev,attC:att,lyRev:lyRev,lyAtt:lyAtt,revDelta:delta(rev,lyRev),attDelta:delta(att,lyAtt),through:DAYS[DAYS.length-1].day};
+}
+function reviewStats(rows){ var rated=rows.filter(function(r){return r.rating!=null;});
+  var avg=rated.length?rated.reduce(function(s,r){return s+r.rating;},0)/rated.length:null;
+  var lows=rated.filter(function(r){return r.rating<=3;}).sort(function(a,b){return a.rating-b.rating;});
+  return {count:rows.length,avg:avg,low:lows.length,awaiting:rows.filter(function(r){return !r.reply;}).length,lowest:lows[0]||null}; }
+function reviewsSince(day){ return REVIEWS.filter(function(r){return r.at>=day;}); }
+function forecastRange(sold){ var r=function(x){return Math.round(x/100)*100;}; return [r(sold*1.3),r(sold*1.45)]; }
+function rainHour(hours,th){ th=th||30; var best=null;
+  hours.forEach(function(h){ if(h.prob>=th && h.prob>(best?best.prob:0)) best=h; }); return best; }
+function upcomingPacing(){ return PACING.filter(function(p){return p.daysOut>0;}).sort(function(a,b){return a.day<b.day?-1:1;}); }
+function notesFor(day,opts){ opts=opts||{}; return S.notes.filter(function(n){
+  return n.day===day && (!opts.audience||n.audience.indexOf(opts.audience)>=0) && (!opts.kinds||opts.kinds.indexOf(n.kind)>=0); }); }
+function eventsFor(day){ return EVENTS.filter(function(e){return e.start.slice(0,10)===day;}).sort(function(a,b){return a.start<b.start?-1:1;}); }
+function shiftsIn(from,to,opts){ opts=opts||{}; return SHIFTS.filter(function(s){
+  if(s.day<from||s.day>to) return false;
+  if(opts.openOnly) return s.tm===null;
+  if(opts.mine) return s.tm===MAYA;
+  return true; }).sort(function(a,b){return a.start<b.start?-1:1;}); }
+function weekOf(day){ var d=new Date(day+'T12:00:00Z'); var dow=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-dow);
+  return Array.from({length:7},function(_,i){ var x=new Date(d); x.setUTCDate(d.getUTCDate()+i); return x.toISOString().slice(0,10); }); }
+function nextShift(list){ return list.filter(function(s){return new Date(s.end)>NOW;})[0]||null; }
+function coworkerLine(names){ if(!names.length) return null;
+  var l=names.map(function(n){return n.lead?n.name+' (lead)':n.name;});
+  return 'With '+(l.length===1?l[0]:l.slice(0,-1).join(', ')+' and '+l[l.length-1])+'.'; }
+function firstClause(t){ if(!t) return null; var s=t.split(/[.!?]/)[0].trim(); return s?s.charAt(0).toLowerCase()+s.slice(1):null; }
+function can(role,perm){ var P={'notes.write':['coo','ops','fnb','retail','marketing'],'brief.approve':['coo','marketing'],
+  'weather.call':['ops','coo'],'notes.ack':['staff','fnb','retail','ops']}; return P[perm].indexOf(role)>=0; }
+function headerLine(day,week,opts){ opts=opts||{}; var p=[dayShort(day)];
+  if(week) p.push((opts.withKind?'Fall week ':'Week ')+week);
+  if(opts.updatedAt) p.push('updated '+timeShort(opts.updatedAt));
+  if(opts.suffix) p.push(opts.suffix); return p.join(' · '); }
+
+/* ============================ SHELL ============================ */
+var NAV={
+  owner:[['Today','/today','home'],['Season','/season','chart'],['Brief','/brief','doc'],['More','/more','dots']],
+  coo:[['Today','/today','home'],['Incidents','/incidents','bookmark'],['Calendar','/calendar','cal'],['Brief','/brief','doc']],
+  fnb:[['Today','/today','home'],['Season','/season','chart'],['Log','/log','list'],['Square',LINKS.square,'square',true]],
+  retail:[['Today','/today','home'],['Season','/season','chart'],['Log','/log','list'],['Square',LINKS.square,'square',true]],
+  marketing:[['Today','/today','home'],['Campaigns','/campaigns','chart'],['Reviews','/reviews','starO'],['Brief','/brief','doc']],
+  ops:[['Today','/today','home'],['Incidents','/incidents','bookmark'],['Calendar','/calendar','cal'],['Log','/log','list']],
+  staff:[['Shifts','/shifts','cal'],['Today','/staff/today','sun'],['Guide','/staff/guide','book'],['Me','/me','user']]
+};
+var HOME={owner:'/today',coo:'/today',ops:'/today',fnb:'/today',marketing:'/today',retail:'/today',staff:'/shifts'};
+function tone(){ return S.role==='staff'?'gold':'dark'; }
+
+function shell(o){
+  var u=USERS[S.role];
+  var gold=tone()==='gold';
+  return '<div class="page">'+
+    '<header class="app-header'+(gold?' app-header--gold':'')+(o.headerExtra?' app-header--stack':'')+'">'+
+      '<div class="app-header__row"'+(o.headerExtra?'':' style="display:contents"')+'>'+
+        '<div class="app-header__text">'+
+          '<h1 class="app-header__title">'+o.title+'</h1>'+
+          (o.subtitle!=null?'<div class="app-header__sub">'+o.subtitle+'</div>':'')+
+        '</div>'+
+        '<div class="app-header__side">'+
+          '<select class="role-switch" id="roleSwitch" aria-label="Preview as role">'+
+            ALL_ROLES.map(function(r){return '<option value="'+r+'"'+(r===S.role?' selected':'')+'>'+ROLE_LABEL[r]+'</option>';}).join('')+
+          '</select>'+
+          '<div class="avatar" aria-label="'+esc(u.name)+'">'+initials(u.name)+'</div>'+
+        '</div>'+
+      '</div>'+ (o.headerExtra||'') +
+    '</header>'+
+    '<main class="page-body'+(o.noTabs?' page-body--no-tabs':'')+'">'+o.body+'</main>'+
+  '</div>';
+}
+function renderTabs(){
+  var tabs=NAV[S.role]||[];
+  document.getElementById('tabbar').innerHTML=tabs.map(function(t){
+    var on=!t[3]&&(S.route===t[1]||(t[1]!=='/today'&&S.route.indexOf(t[1])===0));
+    var icon=I[t[2]]({size:22,strokeWidth:on?2.2:2});
+    if(t[3]) return '<a class="tab" href="'+t[1]+'" target="_blank" rel="noopener noreferrer">'+icon+'<span>'+t[0]+'</span></a>';
+    return '<button type="button" class="tab'+(on?' tab--active':'')+'" data-go="'+t[1]+'">'+icon+'<span>'+t[0]+'</span></button>';
+  }).join('');
+}
+
+/* -------- little builders -------- */
+function card(inner,cls,style){ return '<section class="card'+(cls?' '+cls:'')+'"'+(style?' style="'+style+'"':'')+'>'+inner+'</section>'; }
+function cardHead(label,right){ return '<div class="row row--between"><div class="label">'+label+'</div>'+
+  (right!=null?'<div class="meta">'+right+'</div>':'')+'</div>'; }
+function statTile(label,value,sub,size){
+  var lg=size==='lg';
+  return '<section class="card'+(lg?' gap-4':' card--tight')+'"><div class="label">'+label+'</div>'+
+    '<div class="'+(lg?'num-lg':'num-sm')+'">'+value+'</div>'+
+    (sub!=null?'<div class="'+(lg?'meta':'meta bold')+'"'+(lg?'':' style="font-size:11px"')+'>'+sub+'</div>':'')+'</section>';
+}
+function deltaPill(ratio,ly,hero,fmtKind){
+  if(ratio==null) return '<span class="delta delta--flat'+(hero?' delta--hero':'')+'">no LY</span>';
+  var up=ratio>0.0005, down=ratio<-0.0005;
+  var cls='delta '+(up?'delta--up':down?'delta--down':'delta--flat')+(hero?' delta--hero':'');
+  var lyText = ly==null?null:(fmtKind==='int'?int(ly):moneyShort(ly));
+  var arrow = up?I.up({size:12}):down?I.down({size:12}):'';
+  var txt = hero ? pctSigned(ratio).replace(/^[+−]/,'') : pctSigned(ratio);
+  return '<span class="'+cls+'">'+arrow+'<span>'+txt+(lyText?' · LY '+lyText:'')+'</span></span>';
+}
+function deltaText(ratio,suffix){ if(ratio==null) return '<span style="color:var(--muted)">—</span>';
+  return '<span class="'+(ratio>=0?'pos':'neg')+'">'+pctSigned(ratio)+(suffix||'')+'</span>'; }
+function wxIconFor(call,prob){ if(call==='rainout'||call==='closed') return I.rain; if(call==='delayed') return I.cloud;
+  if((prob||0)>=50) return I.rain; return I.sun; }
+function wxChip(call,prob,toneKind,label){
+  var Icon=wxIconFor(call,prob);
+  var text=label||(call?WEATHER_CALL_LABEL[call]:'Not called yet');
+  var variant=(call==='rainout'||call==='closed')?'wx-chip--warn':call==='delayed'?'wx-chip--delayed':'';
+  var cls='wx-chip '+(toneKind==='gold'?'wx-chip--gold':toneKind==='pill'?'wx-chip--pill '+variant:'wx-chip--muted');
+  return '<span class="'+cls+'">'+Icon({size:16,strokeWidth:2.2})+'<span>'+text+'</span></span>';
+}
+function banner(o){
+  var inner='<div class="banner__lead">'+(o.icon||'')+'<div class="banner__text"><div class="banner__title">'+o.title+'</div>'+
+    (o.sub!=null?'<div class="banner__sub">'+o.sub+'</div>':'')+'</div></div>'+(o.right||'');
+  var cls='banner banner--'+o.tone;
+  if(o.go) return '<button type="button" class="'+cls+'" data-go="'+o.go+'">'+inner+'</button>';
+  return '<div class="'+cls+'">'+inner+'</div>';
+}
+function warnBanner(title,text){ return '<div class="banner banner--warn">'+
+  I.alert({size:18,color:'var(--warn)',strokeWidth:2.2,style:'flex-shrink:0;margin-top:1px'})+
+  '<div class="banner__text"><div class="banner__title">'+title+'</div><div class="banner__sub">'+text+'</div></div></div>'; }
+function listRow(o){
+  var inner=(o.icon?'<span class="list-row__icon">'+o.icon+'</span>':'')+
+    '<span class="list-row__body"><span class="list-row__title">'+o.title+'</span>'+
+    (o.sub!=null?'<span class="list-row__sub">'+o.sub+'</span>':'')+'</span>'+(o.right||'');
+  if(o.href) return '<a class="list-row list-row--btn" href="'+o.href+'" target="_blank" rel="noopener noreferrer">'+inner+'</a>';
+  if(o.go) return '<button type="button" class="list-row list-row--btn" data-go="'+o.go+'">'+inner+'</button>';
+  if(o.act) return '<button type="button" class="list-row list-row--btn" data-act="'+o.act+'">'+inner+'</button>';
+  return '<div class="list-row">'+inner+'</div>';
+}
+function extLink(href,text,light){ return '<a class="ext'+(light?' ext--light':'')+'" href="'+href+'" target="_blank" rel="noopener noreferrer"><span>'+text+'</span>'+I.ext({size:14})+'</a>'; }
+function laborRow(name,p,target,right,scaleMax){
+  scaleMax=scaleMax||0.4; var over=p!=null&&p>target;
+  var w=p==null?0:Math.min(100,Math.round(p/scaleMax*100));
+  return '<div class="labor"><div class="labor__name">'+name+'</div>'+
+    '<div class="track"><div class="track__fill'+(over?' track__fill--over':'')+'" style="width:'+w+'%"></div>'+
+    '<div class="track__tick" style="left:'+Math.round(target/scaleMax*100)+'%"></div></div>'+
+    '<div class="labor__pct'+(over?' labor__pct--over':'')+'">'+(p==null?'—':Math.round(p*100)+'%')+'</div>'+
+    (right!=null?'<div class="labor__splh">'+right+'</div>':'')+'</div>';
+}
+function segmented(opts,value,act,hero){
+  return '<div class="seg'+(hero?' seg--hero':'')+'" role="tablist">'+opts.map(function(o){
+    return '<button type="button" role="tab" aria-selected="'+(o[0]===value)+'" class="seg__btn'+(o[0]===value?' seg__btn--on':'')+
+      '" data-act="'+act+'" data-val="'+o[0]+'">'+o[1]+'</button>'; }).join('')+'</div>';
+}
+function zoneBars(rows,legend){
+  var max=Math.max.apply(null,[1].concat(rows.map(function(r){return r.now;})).concat(rows.map(function(r){return r.ly||0;})));
+  return (legend?'<div class="legend"><div class="legend__item"><span class="legend__swatch" style="background:var(--palm-green)"></span>'+legend[0]+'</div>'+
+    '<div class="legend__item"><span class="legend__swatch" style="background:var(--mint-2)"></span>'+legend[1]+'</div></div>':'')+
+    '<div class="zones">'+rows.map(function(r){
+      return '<div class="zone"><div class="zone__name">'+esc(r.name)+'</div><div class="zone__bars">'+
+        '<div class="zone__bar" style="width:'+Math.round(r.now/max*100)+'%"></div>'+
+        '<div class="zone__bar zone__bar--ly" style="width:'+Math.round((r.ly||0)/max*100)+'%"></div></div>'+
+        '<div class="zone__val'+(r.negative?' zone__val--neg':'')+'">'+r.valueLabel+'</div></div>';
+    }).join('')+'</div>';
+}
+function pacingTable(rows,title){
+  var max=Math.max.apply(null,[1].concat(rows.map(function(r){return r.sold;})).concat(rows.map(function(r){return r.lySold||0;})));
+  var anchored=rows.filter(function(r){return r.anchor&&r.lyDay;});
+  if(!rows.length) return card(cardHead(title)+'<div class="meta">No upcoming operating days with sales yet.</div>');
+  return card(cardHead(title)+
+    '<div class="pace-grid pace-grid--head"><div>Date</div><div>Pace vs LY</div><div class="right">Sold</div><div class="right">vs LY</div></div>'+
+    rows.map(function(r){
+      var d=delta(r.sold,r.lySold);
+      var friday=new Date(r.day+'T12:00:00Z').getUTCDay()===5;
+      var tag=r.anchor?r.anchor.split('-')[0].toUpperCase():null;
+      return '<div class="pace-grid'+(friday?' pace-grid--friday':'')+'">'+
+        '<div class="pace-grid__day"><span>'+weekdayDay(r.day)+'</span>'+(tag?'<span class="tag">'+tag+'</span>':'')+'</div>'+
+        '<div class="pace-grid__bars"><div class="pace-grid__bar" style="width:'+Math.round(r.sold/max*100)+'%"></div>'+
+        '<div class="pace-grid__bar pace-grid__bar--ly" style="width:'+Math.round((r.lySold||0)/max*100)+'%"></div></div>'+
+        '<div class="pace-grid__num">'+int(r.sold)+'</div>'+
+        '<div class="pace-grid__num '+(d==null?'':d>=0?'pos':'neg')+'">'+pctSigned(d)+'</div></div>';
+    }).join('')+
+    '<div class="meta">Fridays highlighted (our growth lever).'+
+      anchored.map(function(r){return ' '+weekdayDay(r.day)+' compares to '+dayShort(r.lyDay)+' LY, '+holidayAnchorLabel(r.anchor).toLowerCase()+'.';}).join('')+
+    '</div>','',"gap:8px;padding-bottom:12px");
+}
+</script>
+<script>
+/* ============================ SCREENS ============================ */
+function ownerCockpit(){
+  var u=USERS.owner, first=u.name.split(' ')[0];
+  var day=S.heroView==='yesterday'?YEST:TODAY;
+  var d=dailyFor(day), sd=seasonDay(day), recent=recentDays(7);
+  var std=seasonToDate(), pacing=upcomingPacing().slice(0,3);
+  var rv=reviewStats(reviewsSince(addDays(TODAY,-7)));
+  var note=notesFor(YEST,{kinds:['log'],audience:'leadership'})[0];
+
+  var lyWx=d.ly_weather_summary?deg(d.ly_feels_like_high_f)+' with '+d.ly_weather_summary:deg(d.ly_feels_like_high_f);
+  var nowWx=S.heroView==='yesterday'
+    ? 'Yesterday: feels like '+deg(d.feels_like_high_f)+', '+(d.precip_in?d.precip_in+'" rain':'no rain')+'.'
+    : 'Today: feels like '+deg(d.feels_like_high_f)+(d.weather_summary?', '+d.weather_summary.replace(/^Partly sunny, /,''):'')+'.';
+  var maxBar=Math.max.apply(null,recent.map(function(r){return r.rev;}));
+  var lastDay=recent[recent.length-1].day;
+
+  var hero='<section class="hero">'+
+    '<div class="row row--between gap-10">'+
+      segmented([['yesterday','Yesterday'],['today','Today so far']],S.heroView,'heroView',true)+
+      wxChip(sd.call,null,sd.call?'gold':'muted')+
+    '</div>'+
+    '<div class="col gap-4">'+
+      '<div class="label label--light">Blended revenue · tickets, F&amp;B, retail, Barn deposits</div>'+
+      '<div class="row row--baseline gap-12 row--wrap">'+
+        '<div class="num-xl" style="color:var(--farm-cream)">'+money(d.blended_revenue_cents)+'</div>'+
+        (S.heroView==='yesterday'
+          ? deltaPill(d.blended_delta_pct,d.ly_blended_revenue_cents,true)
+          : '<span class="delta delta--hero">'+int(d.tickets_sold)+' advance sold · LY day '+money(d.ly_blended_revenue_cents)+'</span>')+
+      '</div>'+
+      '<div class="meta meta--light">'+comparablePhrase(d.day,d.week,null)+' · '+lyWx+'. '+nowWx+'</div>'+
+    '</div>'+
+    '<div class="barstrip" role="img" aria-label="Blended revenue, last 7 operating days">'+
+      recent.map(function(r){ var hi=r.day===lastDay;
+        return '<div class="barstrip__col'+(hi?' barstrip__col--hi':'')+'">'+
+          (hi?'<div class="barstrip__val">'+moneyShort(r.rev)+'</div>':'')+
+          '<div class="barstrip__bar" style="height:'+Math.max(4,Math.round(r.rev/maxBar*40))+'px"></div>'+
+          '<div class="barstrip__lbl">'+weekday(r.day)+'</div></div>';
+      }).join('')+
+    '</div></section>';
+
+  var tiles='<div class="grid-2">'+
+    statTile('Attendance',int(d.attendance),'redeemed · LY '+int(d.ly_attendance)+' '+deltaText(d.attendance_delta_pct),'lg')+
+    statTile('Per cap',moneyExact(d.per_cap_cents),'F&amp;B + retail · LY '+moneyExact(d.ly_per_cap_cents)+' '+deltaText(delta(d.per_cap_cents,d.ly_per_cap_cents)),'lg')+
+  '</div>';
+
+  var stdCard='<button type="button" class="card card--link" data-go="/season" style="flex-direction:row;justify-content:space-between;align-items:center;padding:12px 16px">'+
+    '<span class="col gap-2"><span class="label">Season to date</span>'+
+    '<span class="small">'+std.days+' operating days · '+std.weatherDays+' weather day'+(std.weatherDays===1?'':'s')+'</span></span>'+
+    '<span class="col gap-2" style="align-items:flex-end"><span class="num-md">'+moneyShort(std.rev)+'</span>'+
+    '<span class="meta bold '+(std.revDelta>=0?'pos':'neg')+'">'+pctSigned(std.revDelta)+' vs the same '+std.comparableDays+' days LY</span></span></button>';
+
+  var pace=card(cardHead('Next weekend pacing',Math.max.apply(null,pacing.map(function(p){return p.daysOut;}))+' days out')+
+    '<div class="grid-3">'+pacing.map(function(p){
+      var dd=delta(p.sold,p.lySold), behind=dd!=null&&dd<0, prob=p.forecast?p.forecast.prob:null;
+      var Icon=wxIconFor(null,prob);
+      return '<div class="pace-tile'+(behind?' pace-tile--behind':'')+'">'+
+        '<div class="row row--between"><span class="pace-tile__day">'+weekdayDay(p.day)+'</span>'+
+        Icon({size:16,color:behind?'var(--warn)':'var(--star-stroke)'})+'</div>'+
+        '<div class="pace-tile__num">'+int(p.sold)+'</div>'+
+        '<div class="pace-tile__sub">LY '+int(p.lySold)+' · <span class="'+(behind?'neg':'pos')+'">'+
+        (behind?'behind':'ahead')+(behind&&prob&&prob>=30?', '+prob+'% rain':'')+'</span></div></div>';
+    }).join('')+'</div>','','padding-bottom:12px');
+
+  var rvCard=card('<div class="row row--between"><div class="row gap-8">'+star(18)+
+    '<span class="bold nowrap">'+(rv.avg!=null?rv.avg.toFixed(1):'—')+' this week</span>'+
+    '<span class="small nowrap">· '+rv.count+' new</span></div>'+
+    (rv.low>0?'<span class="pill pill--warn">'+rv.low+' at '+rv.lowest.rating+' stars</span>':'')+'</div>'+
+    (note?'<div class="divider"></div><div class="col gap-4"><div class="label">Note from '+esc(note.author)+' · '+timeShort(note.at)+'</div>'+
+      '<div class="body">'+esc(note.body)+'</div></div>':''));
+
+  return shell({title:greeting(NOW)+', '+first,
+    subtitle:headerLine(TODAY,4,{updatedAt:YESTERDAY.pulled_at,withKind:true}),
+    body:hero+tiles+stdCard+pace+rvCard});
+}
+
+function opsBoard(){
+  var d=YESTERDAY, zones=ZONES_FNB, inc=INCIDENTS.filter(function(i){return i.status!=='closed';});
+  var staffing={scheduled:61,clocked:58};
+  var wx=FORECASTS[TODAY], rain=rainHour(HOURLY_WX);
+  var todayPace=PACING.filter(function(p){return p.day===TODAY;})[0];
+  var draft=S.briefs.filter(function(b){return b.status==='draft';})[0];
+  var range=todayPace?forecastRange(todayPace.sold):null;
+  var WxIcon=wxIconFor(null,wx.prob);
+
+  var body='';
+  if(draft) body+=banner({tone:'gold',icon:I.doc({size:22,strokeWidth:2.2}),go:'/brief/'+draft.id,
+    title:'Weekly recap draft is ready',
+    sub:'Week '+draft.week+' · drafted '+weekday(draft.draftedAt)+' · owners see it after you approve',
+    right:'<span class="btn btn--primary btn--sm">Review</span>'});
+
+  body+='<div class="grid-3">'+
+    statTile('Revenue',moneyShort(d.blended_revenue_cents),'<span class="'+(d.blended_delta_pct>=0?'pos':'neg')+'">'+pctSigned(d.blended_delta_pct)+' LY</span>')+
+    statTile('Guests',int(d.attendance),'<span class="'+(d.attendance_delta_pct>=0?'pos':'neg')+'">'+pctSigned(d.attendance_delta_pct)+' LY</span>')+
+    statTile('Labor',pct(d.labor_pct_of_net),'of net · target '+Math.round(LABOR_TARGET*100))+
+  '</div>';
+
+  body+=card('<div class="row row--between" style="padding-bottom:4px">'+
+      '<div class="label">Labor % by zone · '+weekday(d.day,'long')+'</div><div class="meta">sales / labor hr</div></div>'+
+    zones.map(function(z){ return laborRow(z.zone,z.laborPct,LABOR_TARGET,moneyShort(z.splh)); }).join('')+
+    '<div class="row row--between" style="padding-top:4px"><div class="meta">Tick = '+Math.round(LABOR_TARGET*100)+'% target</div>'+
+    extLink(LINKS.timecards,'Timecards in Square')+'</div>','','padding-bottom:10px;gap:8px');
+
+  body+=card(cardHead('Open incidents',inc.length?'<span class="pill pill--warn">'+inc.length+' open</span>':'<span class="pill pill--ok">none open</span>')+
+    inc.map(function(i){ return '<div class="row row--start gap-10" style="min-height:44px">'+
+      '<span class="dot '+(i.confirmed?'dot--gold':'dot--warn')+'"></span>'+
+      '<div class="col gap-2 grow"><div class="body" style="line-height:18px;font-weight:600">'+esc(i.summary)+'</div>'+
+      '<div class="meta">'+weekdayTime(i.at)+' · filed by '+esc(i.by)+' · '+(i.confirmed?(firstClause(i.details)||'severity '+i.sev):'severity: needs your call')+'</div></div></div>';
+    }).join(''));
+
+  body+=card('<div class="col gap-3"><div class="label">Today</div>'+
+      '<div class="body"><span class="bold">'+staffing.scheduled+' scheduled</span> · '+staffing.clocked+' clocked in</div>'+
+      '<div class="meta">Forecast '+int(range[0])+'–'+int(range[1])+' guests · '+int(todayPace.sold)+' advance sold</div></div>'+
+    '<div class="wx-tile">'+WxIcon({size:20,color:'var(--palm-green)'})+
+      '<div class="wx-tile__big">Feels '+deg(wx.feels)+'</div>'+
+      '<div class="wx-tile__sub">'+(rain?rain.prob+'% rain, '+hourLabel(rain.hour):wx.prob+'% rain')+'</div></div>',
+    '','flex-direction:row;justify-content:space-between;align-items:center;gap:12px');
+
+  return shell({title:'Ops board',subtitle:headerLine(TODAY,4,{updatedAt:YESTERDAY.pulled_at}),body:body});
+}
+
+function opsToday(){
+  var sd=seasonDay(TODAY), call=sd.call, calledAt=sd.calledAt;
+  var canCall=can(S.role,'weather.call');
+  var rain=rainHour(HOURLY_WX);
+  var strip=HOURLY_WX.filter(function(h){ return [9,11,13,15,17].indexOf(farmHour(h.hour))>=0; });
+  var pace=PACING.filter(function(p){return p.day===TODAY;})[0];
+  var share=Math.min(1,pace.sold/DESIGN_DAY), range=forecastRange(pace.sold);
+  var todayInc=INCIDENTS.filter(function(i){return i.at.slice(0,10)===TODAY;});
+  var openBefore=INCIDENTS.filter(function(i){return i.status!=='closed'&&i.at.slice(0,10)!==TODAY;});
+  var mins=7*60+30-(7*60+24);
+  var due=call&&calledAt?'called '+timeShort(calledAt):(mins>0?'due in '+mins+' min':'past 7:30');
+
+  var body=card(cardHead('7:30 am weather call',due)+
+    '<div class="calls" role="radiogroup" aria-label="Weather call">'+
+      ['open','delayed','rainout'].map(function(c){
+        return '<button type="button" role="radio" aria-checked="'+(call===c)+'"'+(canCall?'':' disabled')+
+          ' class="call'+(call===c?' call--'+c:'')+'" data-act="call" data-val="'+c+'">'+WEATHER_CALL_LABEL[c]+'</button>';
+      }).join('')+'</div>'+
+    '<div class="meta">'+WEATHER_CALL_NOTE[call||'unset']+(canCall?'':' Only ops and the COO can make the call.')+'</div>'+
+    '<div class="divider"></div>'+
+    '<div class="hours" role="img" aria-label="Feels-like temperature by hour">'+
+      strip.map(function(h){ var wet=h.prob>=30;
+        return '<div class="hours__col"><div class="hours__temp'+(wet?' hours__temp--wet':'')+'">'+deg(h.feels)+'</div>'+
+          '<div class="hours__bar'+(wet?' hours__bar--wet':'')+'"></div><div class="hours__lbl">'+hourLabel(h.hour,'short')+'</div></div>';
+      }).join('')+'</div>'+
+    '<div class="meta">Feels-like by hour · orange = 30%+ rain chance ('+hourLabel(rain.hour)+', '+rain.prob+'%) · no NWS alerts for our point</div>');
+
+  body+=card('<div class="row row--between row--baseline"><div class="label">Tickets for today</div>'+
+      '<div class="meta">same '+weekday(TODAY,'long')+' LY: '+int(pace.lyAtt)+' through gate</div></div>'+
+    '<div class="row row--baseline gap-12"><div class="num-lg" style="font-size:32px;line-height:36px">'+int(pace.sold)+'</div>'+
+      '<div class="small">advance sold · <span class="'+(delta(pace.sold,pace.lySold)>=0?'pos':'neg')+'">'+
+      pctSigned(delta(pace.sold,pace.lySold))+' vs LY at 7 am</span></div></div>'+
+    '<div class="row gap-10"><div class="track track--thick grow"><div class="track__fill track__fill--gold" style="width:'+Math.round(share*100)+'%"></div></div>'+
+      '<div class="meta bold nowrap" style="color:var(--ink)">'+Math.round(share*100)+'% of design day</div></div>'+
+    '<div class="meta">Design day = average of our top 20 days ('+int(DESIGN_DAY)+' guests). Expect '+int(range[0])+'–'+int(range[1])+' with walk-ups.</div>');
+
+  body+=card('<div class="label">Today’s schedule</div>'+
+    eventsFor(TODAY).filter(function(e){return e.kind!=='press';}).map(function(e){
+      return '<div class="sched"><div class="sched__time">'+clock(e.start)+'</div><div class="sched__text">'+esc(e.title)+'</div></div>';
+    }).join(''),'','gap:8px');
+
+  body+='<div class="grid-2">'+
+    '<button type="button" class="card card--link" data-go="/incidents" style="padding:14px;gap:6px">'+
+      '<span class="label">Incidents</span><span class="num-md" style="font-size:24px;line-height:28px">'+todayInc.length+' today</span>'+
+      '<span class="meta">'+openBefore.length+' open from '+(openBefore[0]?weekday(openBefore[0].at,'long'):'earlier')+'</span></button>'+
+    '<button type="button" class="card card--link card--dark" data-go="/log" style="padding:14px;gap:6px;justify-content:center">'+
+      '<span class="row gap-8">'+I.plus({size:18,color:'var(--farm-cream)',strokeWidth:2.2})+
+      '<span class="bold" style="color:var(--farm-cream)">Log entry</span></span>'+
+      '<span class="meta meta--light">Shift note, 86’d item, maintenance</span></button>'+
+  '</div>';
+
+  return shell({title:'Today on the farm',subtitle:headerLine(TODAY,4,{suffix:timeShort(NOW)}),body:body});
+}
+</script>
+<script>
+function fbZones(dept){
+  var copy=dept==='fnb'
+    ? {title:'Food & beverage',net:'F&B net',hourly:'F&B sales by hour'}
+    : {title:'Retail',net:'Retail net',hourly:'Retail sales by hour'};
+  var day=YEST, d=YESTERDAY;
+  var zones=dept==='fnb'?ZONES_FNB:ZONES_RETAIL;
+  var hourly=dept==='fnb'?HOURLY_FNB:HOURLY_RETAIL;
+  var items=dept==='fnb'?TOP_FNB:TOP_RETAIL;
+  var net=dept==='fnb'?d.fnb_net_cents:d.retail_net_cents;
+  var lyNet=dept==='fnb'?d.ly_fnb_net_cents:d.ly_retail_net_cents;
+  var guests=d.attendance, perCap=Math.round(net/guests), lyPerCap=Math.round(lyNet/d.ly_attendance);
+  var orders=zones.reduce(function(a,z){return a+z.orders;},0);
+  var discounts=zones.reduce(function(a,z){return a+z.disc;},0);
+  var refunds=zones.reduce(function(a,z){return a+z.refunds;},0);
+  var below=zones.filter(function(z){return z.delta<0;});
+  var peak=hourly.reduce(function(p,h){return !p||h.net>p.net?h:p;},null);
+  var maxHour=Math.max.apply(null,hourly.map(function(h){return h.net;}));
+  var wd=weekday(day);
+  var zoneInc=INCIDENTS.filter(function(i){ return i.at.slice(0,10)===day && i.loc && zones.some(function(z){return i.loc.indexOf(z.zone)>=0;}); });
+
+  var body='<div class="grid-3">'+
+    statTile(copy.net,moneyShort(net),'<span class="'+(delta(net,lyNet)>=0?'pos':'neg')+'">'+pctSigned(delta(net,lyNet))+' LY</span>')+
+    statTile('Per cap',moneyExact(perCap),'<span class="'+(delta(perCap,lyPerCap)>=0?'pos':'neg')+'">LY '+moneyExact(lyPerCap)+'</span>')+
+    statTile('Txns / guest',(orders/guests).toFixed(2),int(orders)+' orders')+
+  '</div>';
+
+  body+=card('<div class="row row--between"><div class="label">Net sales by zone</div>'+
+      '<div class="legend"><div class="legend__item"><span class="legend__swatch" style="background:var(--palm-green)"></span>'+wd+'</div>'+
+      '<div class="legend__item"><span class="legend__swatch" style="background:var(--mint-2)"></span>Same '+wd+' LY</div></div></div>'+
+    zoneBars(zones.map(function(z){ return {name:z.zone,now:z.net,ly:z.ly,valueLabel:moneyShort(z.net),negative:z.delta<0}; }))+
+    '<div class="meta">'+
+      (below.length===0?'Every zone is ahead of its comparable day.'
+        :below.length===1?esc(below[0].zone)+' is the only zone below its comparable day ('+pctSigned(below[0].delta)+').'
+        :below.map(function(z){return esc(z.zone);}).join(' and ')+' are below their comparable day.')+
+      zoneInc.map(function(i){ return ' '+esc(i.summary.split(' ').slice(0,5).join(' '))+' incident filed '+timeShort(i.at)+'.'; }).join('')+
+    '</div>'+
+    '<div class="row" style="justify-content:flex-end">'+extLink(LINKS.items,'Item detail in Square')+'</div>','','padding-bottom:12px');
+
+  body+=card(cardHead(copy.hourly,'peak '+hourLabel(peak.hour)+' · '+moneyShort(peak.net))+
+    '<div class="curve" role="img" aria-label="'+copy.hourly+'">'+
+      hourly.map(function(h){ return '<div class="curve__bar'+(h===peak?' curve__bar--peak':'')+
+        '" style="height:'+Math.max(2,Math.round(h.net/maxHour*56))+'px"></div>'; }).join('')+'</div>'+
+    '<div class="curve__axis">'+hourly.filter(function(_,i){return i%2===0||i===hourly.length-1;})
+      .map(function(h){return '<span>'+hourLabel(h.hour,'short')+'</span>';}).join('')+'</div>','','gap:8px;padding-bottom:12px');
+
+  body+='<div class="grid-2">'+
+    card('<div class="label">Top items</div>'+items.map(function(it){
+      return '<div class="kv"><span class="kv__k">'+esc(it.name)+'</span><span class="kv__v">'+int(it.qty)+'</span></div>'; }).join(''),'','padding:14px;gap:8px')+
+    card('<div class="label">Discounts &amp; refunds</div>'+
+      '<div class="kv"><span class="kv__k">Discounts</span><span class="kv__v">'+moneyShort(discounts)+'</span></div>'+
+      '<div class="kv"><span class="kv__k">Refunds</span><span class="kv__v">'+moneyShort(refunds)+'</span></div>'+
+      '<div class="kv"><span class="kv__k">Orders</span><span class="kv__v">'+int(orders)+'</span></div>'+
+      '<div class="kv"><span class="kv__k kv__k--muted">of net</span><span class="kv__v pos">'+pct((discounts+refunds)/net)+'</span></div>','','padding:14px;gap:8px')+
+  '</div>';
+
+  return shell({title:copy.title,subtitle:headerLine(day,4,{updatedAt:d.pulled_at}),body:body});
+}
+
+function marketing(){
+  var pacing=upcomingPacing().slice(0,7), snap=MARKETING;
+  var rv=reviewStats(reviewsSince(addDays(TODAY,-7)));
+  var body=pacingTable(pacing,'Ticket pacing · next 7 operating days');
+
+  body+='<div class="grid-2">'+
+    card('<div class="label">Blended CPR · '+snap.windowDays+'d</div>'+
+      '<div class="num-lg" style="font-size:26px;line-height:30px">'+moneyExact(snap.blendedCpr)+'</div>'+
+      '<div class="meta">prior '+snap.windowDays+'d '+moneyExact(snap.priorCpr)+' '+
+        '<span class="'+(delta(snap.blendedCpr,snap.priorCpr)<=0?'pos':'neg')+'">'+pctSigned(delta(snap.blendedCpr,snap.priorCpr))+'</span></div>'+
+      '<div class="divider" style="margin:4px 0"></div>'+
+      snap.channels.map(function(c){ return '<div class="kv kv--sm"><span class="kv__k kv__k--muted">'+c.name+'</span>'+
+        '<span class="kv__v">'+moneyShort(c.spend)+' · '+moneyExact(c.cpr)+'</span></div>'; }).join(''),'','padding:14px;gap:4px')+
+    card('<div class="label">Site · yesterday</div>'+
+      '<div class="num-lg" style="font-size:26px;line-height:30px">'+int(snap.sessions)+'</div>'+
+      '<div class="meta">sessions · '+int(snap.checkouts)+' checkouts <span class="pos">'+pct(snap.checkouts/snap.sessions)+'</span></div>'+
+      '<div class="divider" style="margin:4px 0"></div>'+
+      snap.mix.map(function(t){ return '<div class="kv kv--sm"><span class="kv__k kv__k--muted">'+t.name+'</span>'+
+        '<span class="kv__v">'+Math.round(t.share*100)+'%</span></div>'; }).join(''),'','padding:14px;gap:4px')+
+  '</div>';
+
+  body+='<button type="button" class="card card--link" data-go="/reviews">'+
+    '<span class="row row--between"><span class="row gap-8">'+star(18)+
+      '<span class="bold">'+rv.avg.toFixed(1)+' · '+rv.count+' new this week</span></span>'+
+      '<span class="meta">'+rv.awaiting+' awaiting reply</span></span>'+
+    (rv.lowest?'<span class="row row--start gap-10" style="padding:10px 12px;border-radius:12px;background:var(--peach)">'+
+      '<span class="meta bold nowrap" style="color:var(--warn)">'+rv.lowest.rating+' stars · '+weekday(rv.lowest.at)+'</span>'+
+      '<span class="col gap-4"><span class="small" style="color:var(--ink)">"'+esc(rv.lowest.body)+'"</span>'+
+      '<span class="meta bold" style="color:var(--deep-palm)">'+(rv.lowest.reply?'Replied':rv.lowest.draft?'Draft reply ready · review before posting in GBP':'No reply yet')+'</span></span></span>':'')+
+  '</button>';
+
+  body+=banner({tone:'pending',title:'Google profile performance',
+    sub:'Direction requests, calls, site clicks. Waiting on API approval.',right:'<span class="pill pill--muted">Pending</span>'});
+
+  return shell({title:'Marketing',subtitle:headerLine(TODAY,4,{suffix:'through yesterday'}),body:body});
+}
+
+function campaigns(){
+  var snap=MARKETING;
+  var byCh=function(ch){ return CAMPAIGNS.filter(function(c){return c.ch===ch;}); };
+  var maxCpr=Math.max.apply(null,CAMPAIGNS.map(function(c){return c.cpr;}));
+  var target=350; // $3.50 ceiling agreed with Jen
+  function chCard(ch){
+    var rows=byCh(ch), spend=rows.reduce(function(a,c){return a+c.spend;},0), red=rows.reduce(function(a,c){return a+c.red;},0);
+    return card('<div class="row row--between row--baseline"><div class="label">'+ch+' · last '+snap.windowDays+' days</div>'+
+        '<div class="meta">'+moneyShort(spend)+' spend · '+int(red)+' redemptions</div></div>'+
+      rows.map(function(c){
+        var over=c.cpr>target, w=Math.round(c.cpr/maxCpr*100);
+        return '<div class="camp"><div class="camp__top"><div class="camp__name">'+esc(c.name)+'</div>'+
+          '<div class="camp__cpr'+(over?' camp__cpr--over':'')+'">'+moneyExact(c.cpr)+'</div></div>'+
+          '<div class="camp__bar"><span class="'+(over?'over':'')+'" style="width:'+w+'%"></span></div>'+
+          '<div class="camp__meta"><span>'+moneyShort(c.spend)+' spend · '+int(c.red)+' redemptions</span>'+
+          '<span>'+(over?'above the $3.50 ceiling':'inside target')+'</span></div></div>';
+      }).join(''),'','gap:2px');
+  }
+  var body=card('<div class="row row--between row--baseline"><div class="label">Cost per redemption · blended</div>'+
+      '<div class="meta">bars scale to the worst campaign</div></div>'+
+    '<div class="row row--baseline gap-12"><div class="num-lg">'+moneyExact(snap.blendedCpr)+'</div>'+
+      '<span class="delta delta--up">'+I.down({size:12})+'<span>'+pctSigned(delta(snap.blendedCpr,snap.priorCpr))+' vs prior 7d</span></span>'+
+      '<div class="meta">was '+moneyExact(snap.priorCpr)+'</div></div>'+
+    '<div class="meta">A redemption is a scanned ticket, not a checkout — TicketSpice orders are matched to gate scans overnight, so today’s number moves until tomorrow morning.</div>');
+
+  body+=chCard('Meta')+chCard('Google');
+
+  body+=card('<div class="label">Creative · Meta, last 7 days</div>'+
+    CREATIVES.map(function(c){
+      return '<div class="kv"><span class="kv__k">'+esc(c.name)+'</span>'+
+        '<span class="kv__v">'+moneyExact(c.cpr)+'</span></div>'+
+        '<div class="meta" style="margin-top:-4px">'+int(c.impr)+' impressions · '+pct(c.ctr,1)+' CTR</div>';
+    }).join('<div class="divider" style="margin:4px 0"></div>')+
+    '<div class="divider"></div>'+
+    '<div class="meta">The "Two weekends left" card is spending at more than double the drone opener. Worth pausing before the Halloween push.</div>','','gap:6px');
+
+  body+=banner({tone:'pending',title:'Live Meta and Google Ads pipelines',
+    sub:'These numbers are the last agency export, loaded by hand. Direct API sync lands with request 03.',
+    right:'<span class="pill pill--muted">Pending</span>'});
+
+  return shell({title:'Campaigns',subtitle:'Paid social and search · last 7 days',body:body});
+}
+
+function pacingScreen(){
+  var rows=upcomingPacing();
+  var body=pacingTable(rows,'Upcoming operating days')+
+    card('<div class="meta">Sold = advance tickets as of this morning. LY = the comparable day last season at the same number of days out, so a Saturday is always measured against a Saturday.</div>');
+  return shell({title:'Ticket pacing',subtitle:'Advance sales vs last year at the same days out',body:body});
+}
+</script>
+<script>
+function season(){
+  var std=seasonToDate();
+  var metric=S.seasonView; // 'revenue' | 'attendance'
+  var val=function(d){ return metric==='revenue'?d.rev:d.att; };
+  var lyVal=function(d){ return metric==='revenue'?d.lyRev:d.lyAtt; };
+  var fmtV=function(v){ return metric==='revenue'?moneyShort(v):int(v); };
+  var max=Math.max.apply(null,DAYS.map(function(d){return Math.max(val(d),lyVal(d));}));
+  var weeks=[1,2,3,4];
+
+  var body=card('<div class="row row--between gap-10">'+
+      '<div class="col gap-2"><div class="label">Season to date</div>'+
+      '<div class="small">'+std.days+' days open · '+std.weatherDays+' weather day</div></div>'+
+      segmented([['revenue','Revenue'],['attendance','Guests']],metric,'seasonView')+
+    '</div>'+
+    '<div class="grid-2" style="gap:10px">'+
+      '<div class="tile"><span class="label">Blended revenue</span><span class="num-md">'+moneyShort(std.rev)+'</span>'+
+        '<span class="meta">LY '+moneyShort(std.lyRev)+' '+deltaText(std.revDelta)+'</span></div>'+
+      '<div class="tile"><span class="label">Attendance</span><span class="num-md">'+int(std.att)+'</span>'+
+        '<span class="meta">LY '+int(std.lyAtt)+' '+deltaText(std.attDelta)+'</span></div>'+
+    '</div>'+
+    '<div class="meta">Comparisons cover the '+std.comparableDays+' days we were fully open on both sides. Oct 2 was rained out here, so it and its comparable day sit out of the totals above — the grid still shows them.</div>');
+
+  body+=card('<div class="row row--between"><div class="label">Day by day vs the same week last fall</div>'+
+      '<div class="legend"><div class="legend__item"><span class="legend__swatch" style="background:var(--palm-green)"></span>2026</div>'+
+      '<div class="legend__item"><span class="legend__swatch" style="background:var(--mint-2)"></span>LY</div></div></div>'+
+    '<div class="sgrid sgrid--head"><div>Day</div><div>This year vs LY</div><div class="right">'+(metric==='revenue'?'Revenue':'Guests')+'</div><div class="right">vs LY</div></div>'+
+    weeks.map(function(w){
+      var ds=DAYS.filter(function(d){return d.week===w;});
+      if(!ds.length) return '';
+      var open=ds.filter(function(d){return d.call==='open';});
+      var wv=open.reduce(function(a,d){return a+val(d);},0), wly=open.reduce(function(a,d){return a+lyVal(d);},0);
+      return '<div class="wk-head"><span class="wk-head__n">Week '+w+' · '+dateRange(ds[0].day,ds[ds.length-1].day)+'</span>'+
+        '<span class="wk-head__v">'+fmtV(wv)+' · '+pctSigned(delta(wv,wly))+' LY</span></div>'+
+        ds.map(function(d){
+          var dd=d.call==='open'?delta(val(d),lyVal(d)):null;
+          var out=d.call!=='open';
+          return '<div class="sgrid'+(out?' sgrid--weather':'')+'">'+
+            '<div class="sgrid__day">'+weekdayDay(d.day)+(out?' '+I.rain({size:13,color:'var(--warn)'}):'')+'</div>'+
+            '<div class="sgrid__bars">'+
+              '<div class="sgrid__bar'+(out?' sgrid__bar--out':'')+'" style="width:'+Math.round(val(d)/max*100)+'%"></div>'+
+              '<div class="sgrid__bar sgrid__bar--ly" style="width:'+Math.round(lyVal(d)/max*100)+'%"></div></div>'+
+            '<div class="sgrid__num">'+fmtV(val(d))+'</div>'+
+            '<div class="sgrid__d '+(dd==null?'':dd>=0?'pos':'neg')+'">'+(out?'—':pctSigned(dd))+'</div></div>';
+        }).join('')+
+        (w<4?'<div class="divider" style="margin:6px 0"></div>':'');
+    }).join('')+
+    '<div class="meta">Each day compares to the same weekday of the same season week last fall, not the same calendar date — last fall opened a day later. Rained-out days are shaded and excluded from the week and season deltas.</div>',
+    '','gap:6px;padding-bottom:14px');
+
+  var best=DAYS.slice().sort(function(a,b){return b.rev-a.rev;})[0];
+  var worst=DAYS.filter(function(d){return d.call==='open';}).slice().sort(function(a,b){return delta(a.rev,a.lyRev)-delta(b.rev,b.lyRev);})[0];
+  var fridays=DAYS.filter(function(d){return new Date(d.day+'T12:00:00Z').getUTCDay()===5 && d.call==='open';});
+  var frNow=fridays.reduce(function(a,d){return a+d.att;},0), frLy=fridays.reduce(function(a,d){return a+d.lyAtt;},0);
+
+  body+=card('<div class="label">What the grid says so far</div>'+
+    '<div class="kv"><span class="kv__k">Best day</span><span class="kv__v">'+dayShort(best.day)+' · '+moneyShort(best.rev)+'</span></div>'+
+    '<div class="kv"><span class="kv__k">Weakest against LY</span><span class="kv__v">'+dayShort(worst.day)+' · '+pctSigned(delta(worst.rev,worst.lyRev))+'</span></div>'+
+    '<div class="kv"><span class="kv__k">Fridays, guests vs LY</span><span class="kv__v">'+int(frNow)+' / '+int(frLy)+' · '+pctSigned(delta(frNow,frLy))+'</span></div>'+
+    '<div class="kv"><span class="kv__k">Revenue per operating day</span><span class="kv__v">'+money(std.rev/std.days)+'</span></div>'+
+    '<div class="kv"><span class="kv__k kv__k--muted">Compared with</span><span class="kv__v">'+SEASON.prior+'</span></div>');
+
+  return shell({title:'Season',subtitle:SEASON.season+' · '+dateRange(SEASON.opens_on,SEASON.closes_on)+' · through '+dayShort(std.through),body:body});
+}
+
+function briefApproval(){
+  var approver=can(S.role,'brief.approve');
+  var visible=S.briefs.filter(function(b){ return approver||b.status==='published'; });
+  var b=S.briefId?visible.filter(function(x){return x.id===S.briefId;})[0]:null;
+  if(!b) b=approver?(visible.filter(function(x){return x.status==='draft';})[0]||visible[0]):visible[0];
+  if(!b) return shell({title:'Weekly recap',subtitle:' ',
+    body:card('<div class="label">No brief yet</div><div class="body">The weekly recap is published on Mondays once Jen approves it.</div>')});
+
+  var readOnly=!approver||S.ownerView;
+  var rows=b.source, shown=S.showAllSource?rows:rows.slice(0,3);
+  var isDraft=b.status==='draft';
+  var others=visible.filter(function(x){return x.id!==b.id;});
+
+  var body = isDraft
+    ? banner({tone:'draft',title:'Draft · only you can see this',sub:'Owners get a push when you approve',
+        right:'<span class="pill pill--ok-deep">'+I.check({size:14,color:'var(--palm-green)'})+rows.length+'/'+rows.length+' numbers match source</span>'})
+    : banner({tone:'published',title:'Published · '+weekdayTime(b.publishedAt),
+        sub:'Pushed to the owners'+(b.approvedBy?' · approved by '+b.approvedBy:''),
+        right:I.checkC({size:26,color:'var(--palm-green)'})});
+
+  body+=card('<h2 class="brief-headline">'+esc(b.headline)+'</h2>'+
+    '<div class="col gap-10">'+b.bullets.map(function(t){
+      return '<div class="row row--start gap-10"><span class="bullet"></span><div class="body">'+esc(t)+'</div></div>'; }).join('')+'</div>'+
+    '<div class="divider"></div>'+
+    '<div class="grid-2">'+
+      '<div class="col gap-4"><div class="label" style="color:var(--warn)">Risk</div><div class="small" style="color:var(--ink)">'+esc(b.risk)+'</div></div>'+
+      '<div class="col gap-4"><div class="label" style="color:var(--deep-palm)">Ask</div><div class="small" style="color:var(--ink)">'+esc(b.ask)+'</div></div>'+
+    '</div>','','padding:18px 18px 16px;gap:14px');
+
+  body+=card('<div class="label">Computed in SQL · what the draft was written from</div>'+
+    shown.map(function(r){ return '<div class="source-row"><span class="source-row__k">'+esc(r[0])+'</span>'+
+      '<span class="source-row__v">'+esc(r[1])+'</span></div>'; }).join('')+
+    (rows.length>3?'<button type="button" class="link-btn" data-act="toggleSource" style="white-space:normal;text-align:left">'+
+      (S.showAllSource?'Show fewer rows':(rows.length-3)+' more rows · the model wrote the words, not the numbers')+'</button>':''),'','gap:6px');
+
+  if(!readOnly && isDraft){
+    body+='<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:10px">'+
+      '<button type="button" class="btn btn--outline" disabled title="Editing arrives with the next release">Edit draft</button>'+
+      '<button type="button" class="btn btn--primary" data-act="approve" data-val="'+b.id+'">'+I.check({size:18})+'<span>Approve and publish</span></button></div>';
+  }
+  if(!readOnly && !isDraft){
+    body+='<div class="col gap-8" style="align-items:center">'+
+      '<button type="button" class="btn btn--outline" style="width:100%" data-act="ownerView">Open owner view</button>'+
+      '<button type="button" class="link-btn" style="color:var(--muted)" data-act="resetBrief" data-val="'+b.id+'">Reset demo to draft</button></div>';
+  }
+  if(approver && S.ownerView){
+    body+='<button type="button" class="btn btn--outline" data-act="myView">Back to your view</button>';
+  }
+  if(others.length){
+    body+='<div class="col gap-6"><div class="section-label">Other briefs</div><div class="card card--list">'+
+      others.map(function(o){ return listRow({go:'/brief/'+o.id,
+        title:'Week '+o.week+' · '+dateRange(o.start,o.end),sub:esc(o.headline),
+        right:'<span class="pill '+(o.status==='published'?'pill--ok':'pill--gold')+'">'+o.status+'</span>'}); }).join('')+
+      '</div></div>';
+  }
+
+  return shell({title:'Weekly recap · Week '+b.week,
+    subtitle:dateRange(b.start,b.end)+' · drafted '+weekdayTime(b.draftedAt),body:body});
+}
+
+function hub(){
+  var u=USERS[S.role];
+  var chev=I.chev({size:16,color:'var(--muted-3)'});
+  var ex=I.ext({size:16,color:'var(--muted-3)',strokeWidth:2.2});
+  var g={size:20,color:'var(--palm-green)'};
+  var body='<div class="col gap-6"><div class="section-label">In this app</div><div class="card card--list">'+
+    listRow({icon:I.chart(g),title:'Season vs last season',sub:'Day by day, same-week basis, weather on both sides',right:chev,go:'/season'})+
+    listRow({icon:I.doc(g),title:'Weekly briefs',sub:'Every published recap, newest first',right:chev,go:'/brief'})+
+    listRow({icon:I.square(g),title:'F&amp;B zones and retail',sub:'Per zone, per cap, labor, items',right:chev,go:'/fnb'})+
+    listRow({icon:I.pulse(g),title:'Ticket pacing',sub:'Upcoming dates vs LY at the same days out',right:chev,go:'/pacing'})+
+    listRow({icon:I.barn(g),title:'The Barn',sub:'Inquiries, booked, deposits, upcoming events',right:chev,go:'/barn'})+
+  '</div></div>';
+  body+='<div class="col gap-6"><div class="section-label">Opens another app · signed in as you</div><div class="card card--list">'+
+    listRow({icon:'<span class="app-mark app-mark--square"></span>',title:'Square Dashboard',sub:'Item detail, timecards, who’s working, Square AI',right:ex,href:LINKS.square})+
+    listRow({icon:'<span class="app-mark">H</span>',title:'HoneyBook',sub:'Barn pipeline detail, proposals, contracts',right:ex,href:LINKS.honeybook})+
+    listRow({icon:'<span class="app-mark">T</span>',title:'TicketSpice',sub:'Roster, refunds, check-in app',right:ex,href:LINKS.ticketspice})+
+    listRow({icon:'<span class="app-mark">G</span>',title:'Google Business Profile',sub:'Reply to reviews',right:ex,href:LINKS.gbp})+
+  '</div></div>';
+  body+='<div class="col gap-6"><div class="section-label">You</div><div class="card card--list">'+
+    listRow({icon:I.bell(g),title:'Alerts',sub:'Weekly brief, sold-out, low review, serious incident',right:chev,go:'/me'})+
+    listRow({icon:I.user(g),title:esc(u.name.split(' ')[0])+' · '+ROLE_LABEL[S.role],sub:'Preview mode · sample data'})+
+    listRow({icon:I.logout(g),title:'Sign out',act:'signout'})+
+  '</div></div>';
+  return shell({title:'More',subtitle:'Reports in here, and the tools we link out to',body:body});
+}
+</script>
+<script>
+var KIND_LABEL={log:'Shift note',issue:'Issue',win:'Win',eighty_six:"86'd item",special:'Special',announcement:'Announcement'};
+var KIND_PILL={log:'pill--muted',issue:'pill--warn',win:'pill--ok',eighty_six:'pill--warn',special:'pill--gold',announcement:'pill--ok-deep'};
+
+function logScreen(){
+  var writer=can(S.role,'notes.write');
+  var sortD=function(a,b){ return a.at<b.at?1:-1; };
+  var t=notesFor(TODAY).slice().sort(sortD), y=notesFor(YEST).slice().sort(sortD);
+  function noteList(notes){
+    return '<div class="card card--list">'+(notes.length?notes.map(function(n){
+      return '<div class="list-row" style="align-items:flex-start;padding:12px 16px">'+
+        '<div class="list-row__body gap-4">'+
+          '<div class="row row--between gap-8"><span class="meta bold">'+esc(n.author)+' · '+timeShort(n.at)+'</span>'+
+          '<span class="pill '+KIND_PILL[n.kind]+'">'+KIND_LABEL[n.kind]+'</span></div>'+
+          '<span class="body">'+esc(n.body)+'</span>'+
+          (n.ack&&n.ackTotal?'<span class="meta">'+(n.ackCount||0)+' of '+n.ackTotal+' acknowledged</span>':'')+
+        '</div></div>';
+    }).join(''):'<div class="list-row"><span class="meta">No notes.</span></div>')+'</div>';
+  }
+  var body='';
+  if(writer){
+    body+=card('<div class="col gap-8">'+
+      '<label class="label" for="noteKind">New note</label>'+
+      '<select id="noteKind" class="select">'+['log','eighty_six','issue','win','special','announcement']
+        .map(function(k){return '<option value="'+k+'"'+(k===S.noteKind?' selected':'')+'>'+KIND_LABEL[k]+'</option>';}).join('')+'</select>'+
+      '<textarea id="noteBody" class="textarea" placeholder="What happened, where, and what you did about it" aria-label="Note body">'+esc(S.noteBody)+'</textarea>'+
+      '<button type="button" class="toggle'+(S.noteToStaff?' toggle--on':'')+'" data-act="toStaff" aria-pressed="'+S.noteToStaff+'">'+
+        '<span class="small" style="color:var(--ink)">Show to staff on Today</span><span class="toggle__knob"></span></button>'+
+      '<button type="button" class="btn btn--primary" data-act="addNote">Add note</button>'+
+    '</div>');
+  }
+  body+='<div class="col gap-6"><div class="section-label">Today · '+dayShort(TODAY)+'</div>'+noteList(t)+'</div>';
+  body+='<div class="col gap-6"><div class="section-label">Yesterday · '+dayShort(YEST)+'</div>'+noteList(y)+'</div>';
+  return shell({title:'Log',subtitle:'Shift notes, 86’d items, wins and issues',body:body});
+}
+
+function incidents(){
+  var SEV_PILL={info:'pill--muted',minor:'pill--gold',serious:'pill--warn',critical:'pill--warn'};
+  function row(i){
+    return '<div class="list-row" style="align-items:flex-start;padding:12px 16px">'+
+      '<span class="dot '+(i.status==='closed'?'dot--ok':i.confirmed?'dot--gold':'dot--warn')+'"></span>'+
+      '<div class="list-row__body gap-4">'+
+        '<div class="row row--between gap-8"><span class="list-row__title" style="line-height:18px">'+esc(i.summary)+'</span>'+
+        '<span class="pill '+SEV_PILL[i.sev]+'">'+i.sev+(i.confirmed?'':'?')+'</span></div>'+
+        '<span class="meta">'+dayShort(i.at)+' '+timeShort(i.at)+' · '+esc(i.by)+' · '+esc(i.loc)+' · via '+i.source+'</span>'+
+        (i.details?'<span class="small" style="color:var(--ink)">'+esc(i.details)+'</span>':'')+
+        (!i.confirmed&&i.status!=='closed'?'<span class="meta bold" style="color:var(--warn)">Severity needs the COO’s call</span>':'')+
+      '</div></div>';
+  }
+  var open=INCIDENTS.filter(function(i){return i.status!=='closed';});
+  var closed=INCIDENTS.filter(function(i){return i.status==='closed';});
+  var body='<div class="col gap-6"><div class="row row--between" style="padding:0 4px">'+
+      '<span class="section-label" style="padding:0">Open</span>'+
+      '<span class="pill '+(open.length?'pill--warn':'pill--ok')+'">'+(open.length?open.length+' open':'none open')+'</span></div>'+
+    '<div class="card card--list">'+(open.length?open.map(row).join(''):'<div class="list-row"><span class="meta">Nothing open.</span></div>')+'</div></div>';
+  if(closed.length) body+='<div class="col gap-6"><div class="section-label">Closed</div><div class="card card--list">'+closed.map(row).join('')+'</div></div>';
+  body+=card('<div class="meta">Incidents are filed from the ops Log, forwarded emails and the SharePoint form. Closing one happens here once the review flow ships.</div>');
+  return shell({title:'Incidents',subtitle:'From the app, email and SharePoint · newest first',body:body});
+}
+
+function calendar(){
+  var KIND_PILL2={music:'pill--ok',barn:'pill--gold',press:'pill--warn',other:'pill--muted'};
+  var days=Array.from({length:8},function(_,i){return addDays(TODAY,i);});
+  var groups=days.map(function(d){return {day:d,events:eventsFor(d)};}).filter(function(g){return g.events.length||g.day===TODAY;});
+  var body=groups.map(function(g){
+    return '<div class="col gap-6"><div class="section-label">'+(g.day===TODAY?'Today · ':'')+dayLong(g.day)+'</div>'+
+      '<div class="card card--list">'+(g.events.length?g.events.map(function(e){
+        var line=e.timeLabel||(e.end?timeRange(e.start,e.end):clock(e.start));
+        return '<div class="list-row" style="min-height:56px">'+
+          '<div class="sched__time sched__time--wide">'+line+'</div>'+
+          '<div class="list-row__body"><span class="list-row__title">'+esc(e.title)+'</span>'+
+          '<span class="list-row__sub">'+[e.loc,e.source].filter(Boolean).join(' · ')+'</span></div>'+
+          '<span class="pill '+(KIND_PILL2[e.kind]||'pill--muted')+'">'+e.kind+'</span></div>';
+      }).join(''):'<div class="list-row"><span class="meta">Nothing scheduled.</span></div>')+'</div></div>';
+  }).join('');
+  body+=card('<div class="meta">Events sync from the shared Outlook calendar and HoneyBook. Staff see the ones with a staff note on their Today screen.</div>');
+  return shell({title:'Calendar',subtitle:'Outlook, HoneyBook and the farm calendar · next 7 days',body:body});
+}
+
+function reviews(){
+  var rows=reviewsSince(addDays(TODAY,-14)).slice().sort(function(a,b){return a.at<b.at?1:-1;});
+  var st=reviewStats(rows);
+  function stars(n){ var out=''; for(var i=0;i<5;i++) out+= i<n?star(14):starEmpty(14); return '<span class="stars" aria-label="'+n+' stars">'+out+'</span>'; }
+  var body=card('<div class="row gap-8">'+star(18)+'<span class="bold">'+st.avg.toFixed(1)+' average · '+st.count+' reviews</span></div>'+
+    '<span class="pill '+(st.awaiting?'pill--warn':'pill--ok')+'">'+st.awaiting+' awaiting reply</span>',
+    '','flex-direction:row;justify-content:space-between;align-items:center');
+  body+=rows.map(function(r){
+    return card('<div class="row row--between"><div class="row gap-8">'+stars(r.rating)+'<span class="bold">'+esc(r.author)+'</span></div>'+
+      '<span class="meta">'+dayShort(r.at)+'</span></div>'+
+      '<div class="body">'+esc(r.body)+'</div>'+
+      (r.reply
+        ? '<div class="col gap-2" style="padding:8px 12px;border-radius:10px;background:var(--mint)">'+
+          '<span class="label" style="color:var(--deep-palm)">Our reply</span>'+
+          '<span class="small" style="color:var(--ink)">'+esc(r.reply)+'</span></div>'
+        : r.draft
+        ? '<div class="col gap-4" style="padding:8px 12px;border-radius:10px;background:var(--butter)">'+
+          '<span class="label" style="color:var(--gold-deep)">Draft reply · review before posting</span>'+
+          '<span class="small" style="color:var(--ink)">'+esc(r.draft)+'</span>'+
+          extLink(LINKS.gbp,'Post in Google Business Profile')+'</div>'
+        : extLink(LINKS.gbp,'Reply in Google Business Profile')),'','gap:8px');
+  }).join('');
+  return shell({title:'Reviews',subtitle:'Google · last 14 days',body:body});
+}
+
+function barn(){
+  var b=BARN;
+  var maxF=b.funnel[0].v;
+  var body='<div class="grid-3">'+
+    statTile('Inquiries',int(b.inquiries30),'<span class="pos">'+pctSigned(delta(b.inquiries30,b.lyInquiries30))+' LY</span>')+
+    statTile('Booked',int(b.booked30),'contracts · 30d')+
+    statTile('Deposits',moneyShort(b.depositsCents),'collected · 30d')+
+  '</div>';
+  body+=card('<div class="row row--between row--baseline"><div class="label">Last 30 days</div>'+
+      '<div class="meta">'+Math.round(b.booked30/b.inquiries30*100)+'% inquiry to contract</div></div>'+
+    '<div class="funnel">'+b.funnel.map(function(f,i){
+      return '<div class="funnel__row"><div class="funnel__k">'+f.k+'</div>'+
+        '<div class="funnel__bar"><span class="'+(i===b.funnel.length-1?'gold':'')+'" style="width:'+Math.round(f.v/maxF*100)+'%"></span></div>'+
+        '<div class="funnel__v">'+f.v+'</div></div>';
+    }).join('')+'</div>'+
+    '<div class="meta">Stages come straight from the HoneyBook pipeline. A tour that never books stays in "Tours booked" until the couple closes it out.</div>');
+
+  body+=card('<div class="label">Next three events</div>'+
+    b.events.map(function(e){
+      return '<div class="evt"><div class="evt__date"><div class="evt__mo">'+monShort(e.date)+'</div><div class="evt__dy">'+dayNum(e.date)+'</div></div>'+
+        '<div class="grow col gap-2"><span class="list-row__title">'+esc(e.title)+'</span>'+
+        '<span class="list-row__sub">'+esc(e.sub)+'</span></div>'+
+        '<span class="pill '+(e.pill==='Deposit paid'?'pill--ok':'pill--gold')+'">'+e.pill+'</span></div>';
+    }).join(''),'','gap:2px');
+
+  body+=card('<div class="label">2027 season</div>'+
+    '<div class="kv"><span class="kv__k">Dates held</span><span class="kv__v">'+b.held2027+'</span></div>'+
+    '<div class="kv"><span class="kv__k">Contracted value</span><span class="kv__v">'+money(b.contracted2027Cents)+'</span></div>'+
+    '<div class="kv"><span class="kv__k kv__k--muted">Average booking</span><span class="kv__v">'+money(b.contracted2027Cents/b.held2027)+'</span></div>'+
+    '<div class="divider"></div>'+extLink(LINKS.honeybook,'Open the pipeline in HoneyBook'));
+
+  body+=banner({tone:'pending',title:'Live HoneyBook sync',
+    sub:'These figures are Michelle’s Monday export. The nightly sync lands in the days 31–60 block.',
+    right:'<span class="pill pill--muted">Pending</span>'});
+
+  return shell({title:'The Barn',subtitle:'Weddings and private events · through '+dayShort(YEST),body:body});
+}
+</script>
+<script>
+function staffShifts(){
+  var u=USERS.staff, first=u.name.split(' ')[0];
+  var mine=shiftsIn(TODAY,addDays(TODAY,14),{mine:true});
+  var next=nextShift(mine);
+  var week=weekOf(next?next.day:TODAY);
+  var all=shiftsIn(week[0],week[6],{});
+  var open=shiftsIn(week[0],week[6],{openOnly:true});
+  var weekShifts=mine.filter(function(s){return s.day>=week[0]&&s.day<=week[6];});
+  var wx=next?FORECASTS[next.day]:null;
+  var coworkers=next?all.filter(function(s){return s.day===next.day&&s.zone===next.zone&&s.tm&&s.tm!==next.tm;})
+    .map(function(s){return {name:s.name.split(' ')[0],lead:/lead/i.test(s.job||'')};}):[];
+  var sold=next?(PACING.filter(function(p){return p.day===next.day;})[0]||{}).sold:null;
+  var shiftDays={}; weekShifts.forEach(function(s){shiftDays[s.day]=true;});
+  var rest=weekShifts.filter(function(s){return s.day>=TODAY;});
+  var WxIcon=wxIconFor(null,wx?wx.prob:null);
+
+  var body='<div class="week" role="list">'+week.map(function(d){
+    var isNext=next&&next.day===d;
+    return '<div role="listitem" class="week__day'+(shiftDays[d]?' week__day--shift':'')+(isNext?' week__day--next':'')+'">'+
+      '<div class="week__name">'+weekday(d)+'</div><div class="week__num">'+Number(d.slice(8))+'</div><div class="week__dot"></div></div>';
+  }).join('')+'</div>';
+
+  var line=[coworkerLine(coworkers), sold!=null?(sold>=1500?'Busy day expected: about '+int(Math.round(sold/100)*100)+' advance tickets already sold.':int(sold)+' advance tickets sold so far.'):null]
+    .filter(Boolean).join(' ');
+
+  body+='<section class="hero" style="padding:16px 18px">'+
+    '<div class="row row--between"><div class="label label--light">Next shift · '+weekday(next.day,'long')+'</div>'+
+      '<span class="wx-chip wx-chip--gold">'+WxIcon({size:16,strokeWidth:2.2})+'<span>'+wx.prob+'% rain · '+deg(wx.feels)+'</span></span></div>'+
+    '<div class="row row--baseline gap-10"><div class="shift-hero-time">'+clock(next.start)+' – '+clock(next.end)+'</div>'+
+      '<div class="small" style="color:var(--mint-text)">'+hoursLen(next.start,next.end)+'</div></div>'+
+    '<div class="col gap-4"><div class="bold" style="color:var(--farm-cream)">'+esc(next.zone)+' · '+esc(next.job)+'</div>'+
+      '<div class="small" style="color:var(--mint-text)">'+esc(line)+'</div></div>'+
+    '<div class="grid-2" style="gap:8px">'+
+      '<a class="btn btn--ghost" style="height:44px;font-size:13px" href="'+LINKS.team+'" target="_blank" rel="noopener noreferrer"><span>Swap or drop</span>'+I.ext({size:14})+'</a>'+
+      '<button type="button" class="btn btn--gold" style="height:44px;font-size:13px" data-act="addCal">Add to my calendar</button>'+
+    '</div></section>';
+
+  if(rest.length) body+='<div class="card card--list">'+rest.map(function(s){
+    return '<div class="shift-row"><div class="shift-row__date"><div class="shift-row__wd">'+weekday(s.day)+'</div>'+
+      '<div class="shift-row__dn">'+Number(s.day.slice(8))+'</div></div>'+
+      '<div class="grow col gap-2"><span class="bold">'+timeRange(s.start,s.end,true)+'</span>'+
+      '<span class="meta">'+esc(s.note||(s.zone+' · '+s.job))+'</span></div>'+
+      '<span class="pill '+(s.published?'pill--ok':'pill--gold')+'">'+(s.published?'Published':'Draft')+'</span></div>';
+  }).join('')+'</div>';
+
+  body+=card(cardHead('Open shifts you could pick up',open.length+' this week')+
+    (open.length?open.map(function(s){
+      return '<div class="row row--between gap-10" style="min-height:44px">'+
+        '<div class="col gap-2"><span class="list-row__title">'+weekdayDay(s.day)+' · '+timeRange(s.start,s.end,true)+'</span>'+
+        '<span class="meta">'+esc(s.zone)+' · '+esc(s.job)+'</span></div>'+
+        '<a class="btn btn--outline btn--sm" style="height:44px;border-color:var(--palm-green)" href="'+LINKS.team+'" target="_blank" rel="noopener noreferrer">Claim in Square '+I.ext({size:12})+'</a></div>';
+    }).join(''):'<div class="meta">None right now.</div>')+
+    '<div class="divider"></div>'+
+    '<div class="meta">Schedules come from Square Team, updated every 15 minutes. Clock in and out in Square as usual.</div>');
+
+  var sub=[u.zone,u.job,'week of '+dayShort(week[0]).replace(/^\w+, /,'')].join(' · ');
+  return shell({title:'Hi '+first,subtitle:sub,body:body});
+}
+
+function parseSpecial(body){
+  var parts=body.split(' · ').map(function(s){return s.trim();});
+  if(parts.length<2) return {name:body,sub:'',price:null};
+  var last=parts[parts.length-1], hasPrice=/\$\d/.test(last);
+  return {name:parts[0],sub:parts.slice(1,hasPrice?-1:undefined).join(' · '),price:hasPrice?last:null};
+}
+function staffToday(){
+  var sd=seasonDay(TODAY), wx=FORECASTS[TODAY], rain=rainHour(HOURLY_WX);
+  var notes=notesFor(TODAY,{audience:'staff'});
+  var byKind=function(k){ return notes.filter(function(n){return n.kind===k;}).sort(function(a,b){return a.at<b.at?-1:1;}); };
+  var dayNote=byKind('log').slice(-1)[0];
+  var anns=byKind('announcement'), specials=byKind('special'), out=byKind('eighty_six');
+  var evts=eventsFor(TODAY).filter(function(e){return e.staffNote;});
+
+  var body=card('<div class="row row--between gap-10">'+wxChip(sd.call,wx.prob,'pill')+
+      '<div class="meta right">Feels like '+deg(wx.feels)+(rain?' · '+rain.prob+'% rain around '+hourLabel(rain.hour):'')+'</div></div>'+
+    '<div class="grid-3">'+
+      '<div class="hour-tile"><span class="label">Gates</span><span class="hour-tile__val">'+(sd.call==='delayed'?'12:00':FARM_HOURS.gates)+'</span></div>'+
+      '<div class="hour-tile"><span class="label">Last entry</span><span class="hour-tile__val">'+FARM_HOURS.lastEntry+'</span></div>'+
+      '<div class="hour-tile"><span class="label">Close</span><span class="hour-tile__val">'+FARM_HOURS.close+'</span></div>'+
+    '</div>'+
+    (dayNote?'<div class="small" style="color:var(--ink)">'+esc(dayNote.body)+'</div>':''));
+
+  body+=anns.map(function(a){
+    return '<section class="banner banner--dark">'+
+      '<div class="row row--between"><div class="label label--gold">From '+esc(a.author)+' · please read</div>'+
+      '<div class="meta meta--light">'+(a.ackCount||0)+' of '+a.ackTotal+' read</div></div>'+
+      '<div class="body" style="color:var(--farm-cream)">'+esc(a.body)+'</div>'+
+      (a.ackedByMe
+        ? '<div class="btn btn--ghost" style="height:44px" aria-live="polite">'+I.check({size:16})+'<span>Acknowledged</span></div>'
+        : '<button type="button" class="btn btn--gold" style="height:44px" data-act="ack" data-val="'+a.id+'">'+
+          I.check({size:16,strokeWidth:2.6})+'<span>Got it</span></button>')+
+    '</section>';
+  }).join('');
+
+  if(specials.length) body+=card('<div class="label">Specials today · what guests will ask about</div>'+
+    specials.map(function(n){ var sp=parseSpecial(n.body);
+      return '<div class="special"><div class="col"><span class="list-row__title">'+esc(sp.name)+'</span>'+
+        (sp.sub?'<span class="list-row__sub">'+esc(sp.sub)+'</span>':'')+'</div>'+
+        (sp.price?'<span class="special__price">'+esc(sp.price)+'</span>':'')+'</div>';
+    }).join(''),'','gap:8px');
+
+  if(out.length) body+=warnBanner('Out or limited',esc(out.map(function(n){return n.body;}).join(' ')));
+
+  if(evts.length) body+=card('<div class="label">Happening today</div>'+
+    evts.map(function(e){ return '<div class="sched" style="min-height:38px">'+
+      '<div class="sched__time sched__time--wide">'+(e.timeLabel||clock(e.start))+'</div>'+
+      '<div class="sched__text">'+esc(e.staffNote)+'</div></div>'; }).join(''),'','gap:6px');
+
+  return shell({title:'Today on the farm',
+    subtitle:dayLong(TODAY)+(dayNote?' · posted by '+esc(dayNote.author)+' at '+timeShort(dayNote.at):''),body:body});
+}
+
+function staffGuide(){
+  var STATUS_PILL={Running:'pill--ok','Wait 20 min':'pill--gold',Paused:'pill--warn',Closed:'pill--warn'};
+  var q=S.guideQ.trim().toLowerCase(), searching=q.length>0;
+  var faq=searching?GUEST_FAQ.filter(function(f){
+    return f.q.toLowerCase().indexOf(q)>=0||f.a.toLowerCase().indexOf(q)>=0||f.tags.some(function(t){return t.indexOf(q)>=0;}); }):GUEST_FAQ;
+  var shownFaq=(searching||S.allFaq)?faq:faq.slice(0,3);
+  var shownAttr=S.allAttractions?ATTRACTIONS:ATTRACTIONS.slice(0,3);
+
+  var body='';
+  if(!searching) body+=card('<div class="label">Who to reach</div>'+
+    '<div class="grid-3">'+WHO_TO_REACH.map(function(w){
+      return '<div class="reach'+(w.urgent?' reach--urgent':'')+'"><span class="reach__name">'+w.label+'</span>'+
+        '<span class="reach__sub">'+w.sub+'</span></div>'; }).join('')+'</div>','','gap:8px');
+
+  body+='<div class="col gap-6"><div class="section-label">'+(searching?'Guest questions matching "'+esc(S.guideQ.trim())+'"':'Guest questions')+'</div>'+
+    '<div class="card card--list">'+
+    (shownFaq.length?shownFaq.map(function(f){
+      return '<div class="faq"><span class="faq__q">'+esc(f.q)+'</span><span class="faq__a">'+esc(f.a)+'</span></div>'; }).join('')
+      :'<div class="faq"><span class="faq__a">Nothing matches. Try a shorter word, or radio ch 3 for a manager.</span></div>')+
+    (!searching?'<button type="button" class="more-row" data-act="allFaq" aria-expanded="'+S.allFaq+'">'+
+      '<span>'+(S.allFaq?'Show fewer':'All '+FAQ_TOTAL+' questions')+'</span>'+
+      I.chev({size:16,color:'var(--deep-palm)',style:S.allFaq?'transform:rotate(90deg)':''})+'</button>':'')+
+    '</div>'+
+    (!searching&&S.allFaq?'<div class="meta" style="padding:0 4px">'+GUEST_FAQ.length+' of '+FAQ_TOTAL+' loaded here; the rest are in the SharePoint FAQ.</div>':'')+
+  '</div>';
+
+  if(!searching) body+='<div class="col gap-6"><div class="section-label">Attractions · what to tell guests</div>'+
+    '<div class="card card--list">'+shownAttr.map(function(a){
+      return '<div class="list-row"><span class="list-row__body"><span class="list-row__title">'+a.name+'</span>'+
+        '<span class="list-row__sub">'+a.sub+'</span></span>'+
+        '<span class="pill '+(STATUS_PILL[a.status]||'pill--muted')+'">'+a.status+'</span></div>'; }).join('')+
+    '<button type="button" class="more-row" data-act="allAttr" aria-expanded="'+S.allAttractions+'">'+
+      '<span>'+(S.allAttractions?'Show fewer':'All attractions and the map')+'</span>'+
+      I.chev({size:16,color:'var(--deep-palm)',style:S.allAttractions?'transform:rotate(90deg)':''})+'</button>'+
+    '</div>'+
+    (S.allAttractions?'<div class="meta" style="padding:0 4px">The farm map is on the back of the gate handout; a tappable one is coming.</div>':'')+
+  '</div>';
+
+  body+='<div class="meta" style="padding:0 4px">Hours, attraction descriptions and FAQ come from the same SharePoint files the website uses, so they only need updating once.</div>';
+
+  var headerExtra='<label class="header-search">'+I.search({size:18,color:'var(--muted)'})+
+    '<input type="search" id="guideSearch" value="'+esc(S.guideQ)+'" placeholder="Search: rain check, dogs, strollers, re-entry…" aria-label="Search the guide"></label>';
+  return shell({title:'Farm guide',subtitle:'Answers for the questions guests ask you',headerExtra:headerExtra,body:body});
+}
+
+function me(){
+  var u=USERS[S.role];
+  var body=card('<div class="label">Profile</div>'+
+    '<div class="num-md">'+esc(u.name)+'</div>'+
+    '<div class="small">'+[ROLE_LABEL[S.role],u.zone,u.job].filter(Boolean).join(' · ')+'</div>'+
+    '<div class="meta">Preview mode · sample data</div>');
+  body+=card('<button type="button" class="toggle'+(S.pushOn?' toggle--on':'')+'" data-act="push" aria-pressed="'+S.pushOn+'">'+
+    '<span class="col gap-2" style="text-align:left"><span class="list-row__title">Notifications</span>'+
+    '<span class="meta">'+(S.pushOn?'Alerts are on for this device.':'Get the daily note, schedule changes and weather calls as notifications.')+'</span></span>'+
+    '<span class="toggle__knob"></span></button>');
+  body+=card('<div class="label">Alerts you get</div>'+
+    '<div class="small">'+(S.role==='staff'
+      ?'The daily note, your schedule changes, and the 7:30 weather call on days you work.'
+      :'The weekly brief, sold-out days, low reviews and serious incidents.')+'</div>');
+  body+='<button type="button" class="btn btn--outline" data-act="signout">'+I.logout({size:18})+'<span>Sign out</span></button>';
+  return shell({title:'Me',subtitle:u.email,body:body});
+}
+</script>
+<script>
+function signIn(){
+  return '<div class="page"><div class="signin-wrap" style="padding:36px 20px;display:flex;flex-direction:column;gap:16px;justify-content:center;min-height:100%">'+
+    '<div style="width:64px;height:64px;border-radius:20px;background:var(--deep-palm);display:flex;align-items:center;justify-content:center">'+
+      I.sun({size:34,color:'#F2B830',strokeWidth:2.2})+'</div>'+
+    '<div class="col gap-4"><div style="font-family:var(--font-display);font-weight:600;font-size:28px;line-height:32px;color:var(--deep-palm)">Ananda Farm</div>'+
+      '<div class="small">One app for the farm: today’s numbers for leadership, shifts and the daily note for the team.</div></div>'+
+    card('<div class="label">Preview mode · sample data</div>'+
+      '<div class="small">No sign-in needed. Pick a role to see its screens; you can switch again from the header.</div>'+
+      '<div class="chips">'+ALL_ROLES.map(function(r){
+        return '<button type="button" class="chip" data-act="pickRole" data-val="'+r+'">'+ROLE_LABEL[r]+'</button>'; }).join('')+'</div>')+
+    '<div class="meta">Staff accounts are added by the office. Nothing here is public.</div>'+
+  '</div></div>';
+}
+
+/* ---------------- routing ---------------- */
+var ALL_SCREENS=[
+  ['/today','Today (role home)'],['/season','Season'],['/brief','Weekly recap'],['/more','More'],
+  ['/pacing','Ticket pacing'],['/fnb','F&B zones'],['/retail','Retail'],['/campaigns','Campaigns'],
+  ['/reviews','Reviews'],['/incidents','Incidents'],['/calendar','Calendar'],['/log','Log'],
+  ['/barn','The Barn'],['/shifts','Staff · shifts'],['/staff/today','Staff · today'],
+  ['/staff/guide','Staff · farm guide'],['/me','Me'],['/signin','Sign in']
+];
+function todayScreen(){
+  switch(S.role){
+    case 'owner': return ownerCockpit();
+    case 'coo': return opsBoard();
+    case 'ops': return opsToday();
+    case 'fnb': return fbZones('fnb');
+    case 'retail': return fbZones('retail');
+    case 'marketing': return marketing();
+    default: return staffToday();
+  }
+}
+function screenFor(route){
+  if(route.indexOf('/brief')===0) return briefApproval();
+  switch(route){
+    case '/today': return todayScreen();
+    case '/season': return season();
+    case '/more': return hub();
+    case '/pacing': return pacingScreen();
+    case '/fnb': return fbZones('fnb');
+    case '/retail': return fbZones('retail');
+    case '/campaigns': return campaigns();
+    case '/reviews': return reviews();
+    case '/incidents': return incidents();
+    case '/calendar': return calendar();
+    case '/log': return logScreen();
+    case '/barn': return barn();
+    case '/shifts': return staffShifts();
+    case '/staff/today': return staffToday();
+    case '/staff/guide': return staffGuide();
+    case '/me': return me();
+    case '/signin': return signIn();
+    default: return todayScreen();
+  }
+}
+
+function renderRail(){
+  var tabs=(NAV[S.role]||[]).filter(function(t){return !t[3];}).map(function(t){return t[1];});
+  document.getElementById('rail').innerHTML=
+    '<div class="rail__brand">Ananda Farm</div>'+
+    '<div class="rail__note">Clickable prototype of the leadership and staff app. Every number is the sample data set — Sunday Oct 18, 2026, 7:24 am, week 4 of fall.</div>'+
+    '<div class="rail__h">Preview as</div>'+
+    '<div class="rail__group">'+ALL_ROLES.map(function(r){
+      return '<button type="button" class="rail__btn'+(r===S.role?' rail__btn--on':'')+'" data-act="pickRole" data-val="'+r+'">'+
+        '<span>'+ROLE_LABEL[r]+'</span><span class="rail__who">'+USERS[r].name.split(' ')[0]+'</span></button>'; }).join('')+'</div>'+
+    '<div class="rail__h">'+ROLE_LABEL[S.role]+'’s tabs</div>'+
+    '<div class="rail__group">'+(NAV[S.role]||[]).map(function(t){
+      if(t[3]) return '<a class="rail__btn" href="'+t[1]+'" target="_blank" rel="noopener noreferrer"><span>'+t[0]+'</span><span class="rail__who">opens Square</span></a>';
+      return '<button type="button" class="rail__btn'+(S.route===t[1]?' rail__btn--on':'')+'" data-go="'+t[1]+'"><span>'+t[0]+'</span></button>'; }).join('')+'</div>'+
+    '<div class="rail__h">Every screen</div>'+
+    '<div class="rail__group">'+ALL_SCREENS.filter(function(s){return tabs.indexOf(s[0])<0;}).map(function(s){
+      return '<button type="button" class="rail__btn'+(S.route===s[0]?' rail__btn--on':'')+'" data-go="'+s[0]+'"><span>'+s[1]+'</span></button>'; }).join('')+'</div>'+
+    '<div class="rail__foot">Built from the app in <code>app/src</code>. Season, Campaigns and The Barn are filled in here — they are placeholders in the current build.</div>';
+}
+
+function go(route){
+  if(route.charAt(0)!=='/') { window.open(route,'_blank','noopener'); return; }
+  S.route=route;
+  S.briefId = route.indexOf('/brief/')===0 ? route.slice(7) : null;
+  if(route.indexOf('/brief')===0){ S.ownerView=false; S.showAllSource=false; }
+  render();
+  var sc=document.getElementById('app'); if(sc) sc.scrollTop=0;
+}
+function toast(msg){
+  var el=document.getElementById('toastEl');
+  if(!el){ el=document.createElement('div'); el.id='toastEl';
+    el.style.cssText='position:absolute;left:16px;right:16px;bottom:'+(84)+'px;background:var(--deep-palm);color:var(--farm-cream);'+
+      'border-radius:12px;padding:11px 14px;font-size:13px;line-height:18px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.28)';
+    document.querySelector('.device').appendChild(el); }
+  el.textContent=msg; el.style.opacity='1';
+  clearTimeout(toast._t); toast._t=setTimeout(function(){ if(el) el.style.opacity='0'; },2600);
+  el.style.transition='opacity .25s';
+}
+
+function render(){
+  document.getElementById('app').innerHTML=screenFor(S.route);
+  renderTabs();
+  renderRail();
+  var noTabs=S.route==='/signin';
+  document.getElementById('tabbar').style.display=noTabs?'none':'grid';
+  var rs=document.getElementById('roleSwitch');
+  if(rs) rs.addEventListener('change',function(e){ setRole(e.target.value); });
+  var gs=document.getElementById('guideSearch');
+  if(gs){ gs.addEventListener('input',function(e){ S.guideQ=e.target.value; var pos=e.target.selectionStart;
+    render(); var n=document.getElementById('guideSearch'); if(n){ n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} } }); }
+  var nk=document.getElementById('noteKind');
+  if(nk) nk.addEventListener('change',function(e){ S.noteKind=e.target.value; });
+  var nb=document.getElementById('noteBody');
+  if(nb) nb.addEventListener('input',function(e){ S.noteBody=e.target.value; });
+}
+function setRole(r){
+  S.role=r; S.route=HOME[r]; S.briefId=null; S.ownerView=false; S.heroView='yesterday';
+  render(); var sc=document.getElementById('app'); if(sc) sc.scrollTop=0;
+}
+
+/* ---------------- actions ---------------- */
+var ACTIONS={
+  heroView:function(v){ S.heroView=v; },
+  seasonView:function(v){ S.seasonView=v; },
+  pickRole:function(v){ setRole(v); return true; },
+  call:function(v){
+    if(!can(S.role,'weather.call')) return;
+    S.seasonDays[TODAY]={day:TODAY,week:4,call:v,calledAt:NOW.toISOString()};
+    toast(v==='rainout'?'Rained out — Jen and the owners have been alerted.'
+      :v==='delayed'?'Delayed to noon — the notice is posted to the staff channel.'
+      :'Open as usual — saved to today’s record.');
+  },
+  approve:function(v){
+    S.briefs=S.briefs.map(function(b){ return b.id===v
+      ? Object.assign({},b,{status:'published',publishedAt:NOW.toISOString(),approvedBy:USERS[S.role].name.split(' ')[0]}) : b; });
+    toast('Published. The owners just got a push.');
+  },
+  resetBrief:function(v){
+    S.briefs=S.briefs.map(function(b){ return b.id===v
+      ? Object.assign({},b,{status:'draft',publishedAt:null,approvedBy:null}) : b; });
+  },
+  ownerView:function(){ S.ownerView=true; },
+  myView:function(){ S.ownerView=false; },
+  toggleSource:function(){ S.showAllSource=!S.showAllSource; },
+  ack:function(v){
+    S.notes=S.notes.map(function(n){ return n.id===v&&!n.ackedByMe
+      ? Object.assign({},n,{ackedByMe:true,ackCount:(n.ackCount||0)+1}) : n; });
+    toast('Thanks — Jen can see you read it.');
+  },
+  toStaff:function(){ S.noteToStaff=!S.noteToStaff; },
+  addNote:function(){
+    var body=S.noteBody.trim();
+    if(!body){ toast('Write the note first.'); return; }
+    var toStaff=S.noteToStaff||['announcement','special','eighty_six'].indexOf(S.noteKind)>=0;
+    S.notes=[{id:'n-'+Date.now(),day:TODAY,author:USERS[S.role].name.split(' ')[0],
+      audience:toStaff?['staff','leadership']:['leadership'],kind:S.noteKind,body:body,
+      ack:S.noteKind==='announcement',at:NOW.toISOString(),
+      ackCount:S.noteKind==='announcement'?0:undefined,ackTotal:S.noteKind==='announcement'?58:undefined,
+      ackedByMe:false}].concat(S.notes);
+    S.noteBody=''; S.noteKind='log'; S.noteToStaff=false;
+    toast(toStaff?'Added. Staff see it on their Today screen.':'Added to the leadership log.');
+  },
+  allFaq:function(){ S.allFaq=!S.allFaq; },
+  allAttr:function(){ S.allAttractions=!S.allAttractions; },
+  push:function(){ S.pushOn=!S.pushOn; },
+  addCal:function(){ toast('A .ics download opens here in the real app.'); },
+  signout:function(){ S.route='/signin'; render(); return true; }
+};
+
+document.addEventListener('click',function(e){
+  var goEl=e.target.closest('[data-go]');
+  if(goEl){ e.preventDefault(); go(goEl.getAttribute('data-go')); return; }
+  var actEl=e.target.closest('[data-act]');
+  if(actEl){
+    var fn=ACTIONS[actEl.getAttribute('data-act')];
+    if(fn){ e.preventDefault(); if(fn(actEl.getAttribute('data-val'))!==true) render(); }
+  }
+});
+
+render();
+</script>
+</body></html>
